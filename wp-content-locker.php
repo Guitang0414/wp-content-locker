@@ -67,10 +67,10 @@ class WP_Content_Locker {
         require_once WCL_PLUGIN_DIR . 'includes/class-wcl-subscription.php';
         require_once WCL_PLUGIN_DIR . 'includes/class-wcl-user.php';
 
-        // Admin classes
+        // Admin classes - metabox needs to be loaded always for save_post hook
+        require_once WCL_PLUGIN_DIR . 'admin/class-wcl-metabox.php';
         if (is_admin()) {
             require_once WCL_PLUGIN_DIR . 'admin/class-wcl-admin.php';
-            require_once WCL_PLUGIN_DIR . 'admin/class-wcl-metabox.php';
         }
 
         // Public classes
