@@ -1,0 +1,32 @@
+/**
+ * WP Content Locker Admin Styles
+ */
+
+.wcl-admin-notice {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-left: 4px solid #2271b1;
+    padding: 12px;
+    margin: 20px 0;
+}
+
+.wcl-admin-notice code {
+    background: #f0f0f1;
+    padding: 4px 8px;
+    display: inline-block;
+    margin: 8px 0;
+}
+
+.wcl-metabox-content {
+    padding: 8px 0;
+}
+
+.wcl-metabox-content label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.wcl-metabox-content .description {
+    color: #646970;
+    font-size: 12px;
+}
