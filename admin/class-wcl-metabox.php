@@ -77,7 +77,7 @@ class WCL_Metabox {
                 </span>
             </p>
 
-            <?php if ($enabled) : ?>
+            <?php if ($enabled === 'yes') : ?>
             <p style="color:green;">
                 <strong><?php _e('Current status: Paywall is ON', 'wp-content-locker'); ?></strong>
             </p>
@@ -85,6 +85,16 @@ class WCL_Metabox {
             <p style="color:#666;">
                 <?php _e('Current status: Paywall is OFF', 'wp-content-locker'); ?>
             </p>
+            <?php endif; ?>
+
+            <?php
+            // Show debug info
+            $debug = get_option('wcl_debug_save', array());
+            if (!empty($debug)) :
+            ?>
+            <hr>
+            <p><strong>Debug (last save attempt):</strong></p>
+            <pre style="font-size:11px;background:#f5f5f5;padding:5px;overflow:auto;"><?php print_r($debug); ?></pre>
             <?php endif; ?>
         </div>
         <?php
@@ -94,36 +104,55 @@ class WCL_Metabox {
      * Save meta box data
      */
     public function save_meta_box($post_id) {
+        // Debug log
+        $debug = array();
+        $debug['post_id'] = $post_id;
+        $debug['nonce_isset'] = isset($_POST['wcl_metabox_nonce']);
+        $debug['checkbox_isset'] = isset($_POST['wcl_enable_paywall']);
+        $debug['checkbox_value'] = isset($_POST['wcl_enable_paywall']) ? $_POST['wcl_enable_paywall'] : 'not set';
+
         // Check nonce
         if (!isset($_POST['wcl_metabox_nonce'])) {
+            $debug['exit_reason'] = 'nonce not set';
+            update_option('wcl_debug_save', $debug);
             return;
         }
 
         if (!wp_verify_nonce($_POST['wcl_metabox_nonce'], 'wcl_save_metabox')) {
+            $debug['exit_reason'] = 'nonce verification failed';
+            update_option('wcl_debug_save', $debug);
             return;
         }
 
         // Check autosave
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            $debug['exit_reason'] = 'autosave';
+            update_option('wcl_debug_save', $debug);
             return;
         }
 
         // Check permissions
         if (!current_user_can('edit_post', $post_id)) {
+            $debug['exit_reason'] = 'no permission';
+            update_option('wcl_debug_save', $debug);
             return;
         }
 
         // Check post type
         if (get_post_type($post_id) !== 'post') {
+            $debug['exit_reason'] = 'not a post type';
+            update_option('wcl_debug_save', $debug);
             return;
         }
 
         // Save enable paywall - checkbox version
         if (isset($_POST['wcl_enable_paywall']) && $_POST['wcl_enable_paywall'] === 'yes') {
-            update_post_meta($post_id, '_wcl_enable_paywall', 'yes');
+            $result = update_post_meta($post_id, '_wcl_enable_paywall', 'yes');
+            $debug['save_result'] = $result;
+            $debug['saved_value'] = 'yes';
         } else {
-            // Checkbox not checked = delete or set to 'no'
             delete_post_meta($post_id, '_wcl_enable_paywall');
+            $debug['saved_value'] = 'deleted';
         }
 
         // Save preview percentage
@@ -134,5 +163,9 @@ class WCL_Metabox {
         } else {
             delete_post_meta($post_id, '_wcl_preview_percentage');
         }
+
+        $debug['success'] = true;
+        update_option('wcl_debug_save', $debug);
     }
 }
+
