@@ -23,6 +23,10 @@ define('WCL_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WCL_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WCL_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
+// Load activator early for activation hook
+require_once WCL_PLUGIN_DIR . 'includes/class-wcl-activator.php';
+require_once WCL_PLUGIN_DIR . 'includes/class-wcl-deactivator.php';
+
 /**
  * Main plugin class
  */
@@ -57,9 +61,7 @@ class WP_Content_Locker {
      * Load required files
      */
     private function load_dependencies() {
-        // Core classes
-        require_once WCL_PLUGIN_DIR . 'includes/class-wcl-activator.php';
-        require_once WCL_PLUGIN_DIR . 'includes/class-wcl-deactivator.php';
+        // Core classes (activator and deactivator already loaded above)
         require_once WCL_PLUGIN_DIR . 'includes/class-wcl-content.php';
         require_once WCL_PLUGIN_DIR . 'includes/class-wcl-stripe.php';
         require_once WCL_PLUGIN_DIR . 'includes/class-wcl-subscription.php';
