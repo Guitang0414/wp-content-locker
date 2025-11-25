@@ -112,7 +112,16 @@ class WP_Content_Locker {
      */
     private function define_public_hooks() {
         $public = new WCL_Public();
+
+        // Standard WordPress content filter
         add_filter('the_content', array($public, 'filter_content'), 99);
+
+        // Elementor compatibility
+        add_filter('elementor/frontend/the_content', array($public, 'filter_content'), 99);
+
+        // Alternative: Hook into template_redirect for full page control
+        add_action('template_redirect', array($public, 'maybe_apply_paywall_redirect'));
+
         add_action('wp_enqueue_scripts', array($public, 'enqueue_styles'));
         add_action('wp_enqueue_scripts', array($public, 'enqueue_scripts'));
 

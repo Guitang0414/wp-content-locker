@@ -13,12 +13,15 @@ class WCL_Admin {
      * Add settings page to admin menu
      */
     public function add_settings_page() {
-        add_options_page(
+        // Add as top-level menu for better visibility
+        add_menu_page(
             __('WP Content Locker', 'wp-content-locker'),
             __('Content Locker', 'wp-content-locker'),
             'manage_options',
             'wp-content-locker',
-            array($this, 'render_settings_page')
+            array($this, 'render_settings_page'),
+            'dashicons-lock',
+            30
         );
     }
 

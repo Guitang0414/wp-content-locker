@@ -23,6 +23,26 @@ class WCL_Public {
             return $content;
         }
 
+        // Debug mode - add ?wcl_debug=1 to URL to see debug info
+        if (isset($_GET['wcl_debug']) && $_GET['wcl_debug'] == '1' && current_user_can('manage_options')) {
+            $post_id = get_the_ID();
+            $debug_info = array(
+                'post_id' => $post_id,
+                'post_meta_wcl_enable_paywall' => get_post_meta($post_id, '_wcl_enable_paywall', true),
+                'global_default_mode' => get_option('wcl_default_paywall_mode', 'disabled'),
+                'has_paywall' => WCL_Content::has_paywall($post_id),
+                'is_user_logged_in' => is_user_logged_in(),
+                'user_can_access' => WCL_Content::user_can_access($post_id),
+            );
+            $debug_html = '<div style="background:#fff3cd;border:1px solid #ffc107;padding:15px;margin:20px 0;font-family:monospace;">';
+            $debug_html .= '<strong>WCL Debug Info:</strong><br>';
+            foreach ($debug_info as $key => $value) {
+                $debug_html .= $key . ': ' . var_export($value, true) . '<br>';
+            }
+            $debug_html .= '</div>';
+            return $debug_html . WCL_Content::apply_paywall($content);
+        }
+
         return WCL_Content::apply_paywall($content);
     }
 
@@ -152,6 +172,106 @@ class WCL_Public {
         wp_send_json_success(array(
             'checkout_url' => $session['url'],
         ));
+    }
+
+    /**
+     * Fallback method for page builders like Elementor
+     * Injects paywall via JavaScript if content filter doesn't work
+     */
+    public function maybe_apply_paywall_redirect() {
+        // Only on single posts
+        if (!is_singular('post')) {
+            return;
+        }
+
+        $post_id = get_the_ID();
+
+        // Check if paywall should be applied
+        if (!WCL_Content::has_paywall($post_id)) {
+            return;
+        }
+
+        // If user can access, no need for paywall
+        if (WCL_Content::user_can_access($post_id)) {
+            return;
+        }
+
+        // Add footer hook to inject paywall via JS
+        add_action('wp_footer', array($this, 'inject_paywall_js'), 100);
+    }
+
+    /**
+     * Inject paywall JavaScript for Elementor and other page builders
+     */
+    public function inject_paywall_js() {
+        $post_id = get_the_ID();
+        $paywall_html = WCL_Content::get_paywall_html($post_id);
+        $preview_percentage = get_post_meta($post_id, '_wcl_preview_percentage', true);
+        if (empty($preview_percentage)) {
+            $preview_percentage = get_option('wcl_preview_percentage', 30);
+        }
+        ?>
+        <script>
+        (function() {
+            // Find the main content area
+            var selectors = [
+                '.elementor-widget-theme-post-content .elementor-widget-container',
+                '.elementor-widget-text-editor .elementor-widget-container',
+                '.entry-content',
+                '.post-content',
+                'article .content',
+                '.single-post-content',
+                'article'
+            ];
+
+            var contentEl = null;
+            for (var i = 0; i < selectors.length; i++) {
+                contentEl = document.querySelector(selectors[i]);
+                if (contentEl && contentEl.innerText.length > 100) {
+                    break;
+                }
+            }
+
+            if (!contentEl) return;
+
+            // Check if paywall already applied
+            if (document.querySelector('.wcl-paywall')) return;
+
+            // Get text content length
+            var fullText = contentEl.innerText;
+            var targetLength = Math.floor(fullText.length * (<?php echo intval($preview_percentage); ?> / 100));
+
+            // Create wrapper
+            var wrapper = document.createElement('div');
+            wrapper.className = 'wcl-content-wrapper';
+
+            // Clone content for preview
+            var preview = document.createElement('div');
+            preview.className = 'wcl-preview-content';
+            preview.innerHTML = contentEl.innerHTML;
+
+            // Truncate preview (simple approach - hide overflow)
+            preview.style.maxHeight = (contentEl.offsetHeight * <?php echo intval($preview_percentage); ?> / 100) + 'px';
+            preview.style.overflow = 'hidden';
+
+            // Add fade overlay
+            var fade = document.createElement('div');
+            fade.className = 'wcl-fade-overlay';
+
+            // Add paywall
+            var paywall = document.createElement('div');
+            paywall.innerHTML = <?php echo json_encode($paywall_html); ?>;
+
+            // Replace content
+            wrapper.appendChild(preview);
+            wrapper.appendChild(fade);
+            wrapper.appendChild(paywall.firstElementChild || paywall);
+
+            contentEl.innerHTML = '';
+            contentEl.appendChild(wrapper);
+        })();
+        </script>
+        <?php
     }
 
     /**
