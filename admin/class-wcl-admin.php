@@ -123,11 +123,11 @@ class WCL_Admin {
         register_setting('wcl_settings', 'wcl_monthly_price');
         add_settings_field(
             'wcl_monthly_price',
-            __('Monthly Display Price', 'wp-content-locker'),
+            __('Monthly Display Price (optional)', 'wp-content-locker'),
             array($this, 'render_text_field'),
             'wp-content-locker',
             'wcl_pricing_section',
-            array('name' => 'wcl_monthly_price', 'placeholder' => '9.99', 'class' => 'small-text')
+            array('name' => 'wcl_monthly_price', 'placeholder' => '9.99', 'class' => 'small-text', 'description' => __('Fallback if Stripe price cannot be fetched', 'wp-content-locker'))
         );
 
         // Yearly Price ID
@@ -145,11 +145,11 @@ class WCL_Admin {
         register_setting('wcl_settings', 'wcl_yearly_price');
         add_settings_field(
             'wcl_yearly_price',
-            __('Yearly Display Price', 'wp-content-locker'),
+            __('Yearly Display Price (optional)', 'wp-content-locker'),
             array($this, 'render_text_field'),
             'wp-content-locker',
             'wcl_pricing_section',
-            array('name' => 'wcl_yearly_price', 'placeholder' => '99.99', 'class' => 'small-text')
+            array('name' => 'wcl_yearly_price', 'placeholder' => '99.99', 'class' => 'small-text', 'description' => __('Fallback if Stripe price cannot be fetched', 'wp-content-locker'))
         );
 
         // Display Settings Section
@@ -263,6 +263,33 @@ class WCL_Admin {
      */
     public function render_pricing_section() {
         echo '<p>' . __('Enter the Stripe Price IDs for your subscription plans. Create these in your Stripe Dashboard under Products.', 'wp-content-locker') . '</p>';
+        echo '<p class="description" style="color:#0073aa;"><strong>' . __('Note: Display prices below are optional. When Price IDs are configured, actual prices are automatically fetched from Stripe.', 'wp-content-locker') . '</strong></p>';
+
+        // Show current Stripe prices if available
+        $stripe = WCL_Stripe::get_instance();
+        $monthly_price_id = get_option('wcl_monthly_price_id', '');
+        $yearly_price_id = get_option('wcl_yearly_price_id', '');
+
+        if (!empty($monthly_price_id) || !empty($yearly_price_id)) {
+            echo '<div style="background:#f0f6fc;border:1px solid #c3c4c7;padding:10px 15px;margin:10px 0;border-radius:4px;">';
+            echo '<strong>' . __('Current Stripe Prices:', 'wp-content-locker') . '</strong><br>';
+
+            if (!empty($monthly_price_id)) {
+                $monthly_formatted = $stripe->get_formatted_price($monthly_price_id);
+                if (!empty($monthly_formatted)) {
+                    echo sprintf(__('Monthly: %s', 'wp-content-locker'), '<code>' . esc_html($monthly_formatted) . '</code>') . '<br>';
+                }
+            }
+
+            if (!empty($yearly_price_id)) {
+                $yearly_formatted = $stripe->get_formatted_price($yearly_price_id);
+                if (!empty($yearly_formatted)) {
+                    echo sprintf(__('Yearly: %s', 'wp-content-locker'), '<code>' . esc_html($yearly_formatted) . '</code>');
+                }
+            }
+
+            echo '</div>';
+        }
     }
 
     /**
@@ -302,6 +329,7 @@ class WCL_Admin {
         $type = isset($args['type']) ? $args['type'] : 'text';
         $class = isset($args['class']) ? $args['class'] : 'regular-text';
         $placeholder = isset($args['placeholder']) ? $args['placeholder'] : '';
+        $description = isset($args['description']) ? $args['description'] : '';
 
         printf(
             '<input type="%s" name="%s" id="%s" value="%s" class="%s" placeholder="%s" />',
@@ -312,6 +340,10 @@ class WCL_Admin {
             esc_attr($class),
             esc_attr($placeholder)
         );
+
+        if (!empty($description)) {
+            printf('<p class="description">%s</p>', esc_html($description));
+        }
     }
 
     /**

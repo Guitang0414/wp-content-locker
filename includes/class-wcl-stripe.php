@@ -472,4 +472,75 @@ class WCL_Stripe {
             update_user_meta($sub->user_id, '_wcl_subscription_status', 'past_due');
         }
     }
+
+    /**
+     * Get price details from Stripe
+     *
+     * @param string $price_id Stripe Price ID
+     * @return array|WP_Error Price details or error
+     */
+    public function get_price($price_id) {
+        if (empty($price_id)) {
+            return new WP_Error('no_price_id', __('Price ID not provided.', 'wp-content-locker'));
+        }
+
+        // Cache key for transient
+        $cache_key = 'wcl_stripe_price_' . md5($price_id);
+        $cached = get_transient($cache_key);
+
+        if ($cached !== false) {
+            return $cached;
+        }
+
+        $result = $this->api_request('/prices/' . $price_id, 'GET', array(
+            'expand[0]' => 'product',
+        ));
+
+        if (is_wp_error($result)) {
+            return $result;
+        }
+
+        // Cache for 1 hour
+        set_transient($cache_key, $result, HOUR_IN_SECONDS);
+
+        return $result;
+    }
+
+    /**
+     * Get formatted price string from Stripe price object
+     *
+     * @param string $price_id Stripe Price ID
+     * @return string Formatted price (e.g., "$9.99/month")
+     */
+    public function get_formatted_price($price_id) {
+        $price = $this->get_price($price_id);
+
+        if (is_wp_error($price)) {
+            return '';
+        }
+
+        $amount = isset($price['unit_amount']) ? $price['unit_amount'] / 100 : 0;
+        $currency = isset($price['currency']) ? strtoupper($price['currency']) : 'USD';
+        $interval = isset($price['recurring']['interval']) ? $price['recurring']['interval'] : '';
+
+        // Format currency symbol
+        $symbols = array(
+            'USD' => '$',
+            'EUR' => '€',
+            'GBP' => '£',
+            'JPY' => '¥',
+            'CNY' => '¥',
+        );
+        $symbol = isset($symbols[$currency]) ? $symbols[$currency] : $currency . ' ';
+
+        // Format interval
+        $interval_text = '';
+        if ($interval === 'month') {
+            $interval_text = '/' . __('month', 'wp-content-locker');
+        } elseif ($interval === 'year') {
+            $interval_text = '/' . __('year', 'wp-content-locker');
+        }
+
+        return $symbol . number_format($amount, 2) . $interval_text;
+    }
 }

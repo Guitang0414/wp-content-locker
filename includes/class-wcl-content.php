@@ -163,8 +163,33 @@ class WCL_Content {
         $title = get_option('wcl_paywall_title', __('Premium Content', 'wp-content-locker'));
         $description = get_option('wcl_paywall_description', __('Subscribe to read the full article.', 'wp-content-locker'));
         $button_text = get_option('wcl_subscribe_button_text', __('Subscribe Now', 'wp-content-locker'));
+
+        // Try to get prices from Stripe first, fall back to manual settings
+        $stripe = WCL_Stripe::get_instance();
+        $monthly_price_id = get_option('wcl_monthly_price_id', '');
+        $yearly_price_id = get_option('wcl_yearly_price_id', '');
+
+        // Get monthly price from Stripe or fallback
         $monthly_price = get_option('wcl_monthly_price', '9.99');
+        $monthly_price_formatted = '';
+        if (!empty($monthly_price_id)) {
+            $stripe_monthly = $stripe->get_price($monthly_price_id);
+            if (!is_wp_error($stripe_monthly) && isset($stripe_monthly['unit_amount'])) {
+                $monthly_price = number_format($stripe_monthly['unit_amount'] / 100, 2);
+                $monthly_price_formatted = $stripe->get_formatted_price($monthly_price_id);
+            }
+        }
+
+        // Get yearly price from Stripe or fallback
         $yearly_price = get_option('wcl_yearly_price', '99.99');
+        $yearly_price_formatted = '';
+        if (!empty($yearly_price_id)) {
+            $stripe_yearly = $stripe->get_price($yearly_price_id);
+            if (!is_wp_error($stripe_yearly) && isset($stripe_yearly['unit_amount'])) {
+                $yearly_price = number_format($stripe_yearly['unit_amount'] / 100, 2);
+                $yearly_price_formatted = $stripe->get_formatted_price($yearly_price_id);
+            }
+        }
 
         ob_start();
         include WCL_PLUGIN_DIR . 'templates/paywall.php';
