@@ -10,6 +10,36 @@ if (!defined('ABSPATH')) {
 class WCL_Metabox {
 
     /**
+     * Constructor - register meta for REST API / Gutenberg support
+     */
+    public function __construct() {
+        add_action('init', array($this, 'register_meta'));
+    }
+
+    /**
+     * Register meta fields for REST API (Gutenberg support)
+     */
+    public function register_meta() {
+        register_post_meta('post', '_wcl_enable_paywall', array(
+            'show_in_rest' => true,
+            'single' => true,
+            'type' => 'string',
+            'auth_callback' => function() {
+                return current_user_can('edit_posts');
+            }
+        ));
+
+        register_post_meta('post', '_wcl_preview_percentage', array(
+            'show_in_rest' => true,
+            'single' => true,
+            'type' => 'integer',
+            'auth_callback' => function() {
+                return current_user_can('edit_posts');
+            }
+        ));
+    }
+
+    /**
      * Add meta box to post editor
      */
     public function add_meta_box() {
@@ -27,22 +57,18 @@ class WCL_Metabox {
      * Render meta box content
      */
     public function render_meta_box($post) {
-        // Add nonce for security
-        wp_nonce_field('wcl_save_metabox', 'wcl_metabox_nonce');
-
         $enabled = get_post_meta($post->ID, '_wcl_enable_paywall', true);
         $preview_percentage = get_post_meta($post->ID, '_wcl_preview_percentage', true);
         $default_mode = get_option('wcl_default_paywall_mode', 'disabled');
 
         // Use global setting if not set
-        if ($preview_percentage === '') {
+        if ($preview_percentage === '' || $preview_percentage === 0) {
             $preview_percentage = get_option('wcl_preview_percentage', 30);
         }
 
-        // Is paywall currently active?
         $is_checked = ($enabled === 'yes');
         ?>
-        <div class="wcl-metabox-content">
+        <div class="wcl-metabox-content" id="wcl-metabox">
             <p class="wcl-default-notice" style="background:#f0f0f1;padding:8px 10px;border-left:3px solid #2271b1;margin:0 0 10px;">
                 <?php if ($default_mode === 'enabled') : ?>
                     <em><?php _e('Global default: Enabled', 'wp-content-locker'); ?></em>
@@ -54,7 +80,6 @@ class WCL_Metabox {
             <p>
                 <label>
                     <input type="checkbox"
-                           name="wcl_enable_paywall"
                            id="wcl_enable_paywall"
                            value="yes"
                            <?php checked($is_checked, true); ?> />
@@ -67,92 +92,122 @@ class WCL_Metabox {
                     <?php _e('Preview percentage:', 'wp-content-locker'); ?>
                 </label>
                 <input type="number"
-                       name="wcl_preview_percentage"
                        id="wcl_preview_percentage"
                        value="<?php echo esc_attr($preview_percentage); ?>"
                        min="10" max="90" style="width: 60px;" /> %
-                <br>
-                <span class="description" style="color:#646970;font-size:12px;">
-                    <?php _e('How much content to show before paywall.', 'wp-content-locker'); ?>
-                </span>
             </p>
 
-            <?php if ($enabled === 'yes') : ?>
-            <p style="color:green;">
-                <strong><?php _e('Current status: Paywall is ON', 'wp-content-locker'); ?></strong>
+            <p id="wcl-status" style="<?php echo $is_checked ? 'color:green;' : 'color:#666;'; ?>">
+                <?php if ($is_checked) : ?>
+                    <strong><?php _e('Status: Paywall is ON', 'wp-content-locker'); ?></strong>
+                <?php else : ?>
+                    <?php _e('Status: Paywall is OFF', 'wp-content-locker'); ?>
+                <?php endif; ?>
             </p>
-            <?php else : ?>
-            <p style="color:#666;">
-                <?php _e('Current status: Paywall is OFF', 'wp-content-locker'); ?>
-            </p>
-            <?php endif; ?>
 
-            <?php
-            // Show debug info
-            $debug = get_option('wcl_debug_save', array());
-            if (!empty($debug)) :
-            ?>
-            <hr>
-            <p><strong>Debug (last save attempt):</strong></p>
-            <pre style="font-size:11px;background:#f5f5f5;padding:5px;overflow:auto;"><?php print_r($debug); ?></pre>
-            <?php endif; ?>
+            <p id="wcl-save-status" style="display:none;color:#0073aa;"></p>
         </div>
+
+        <script>
+        (function() {
+            var postId = <?php echo $post->ID; ?>;
+            var checkbox = document.getElementById('wcl_enable_paywall');
+            var percentInput = document.getElementById('wcl_preview_percentage');
+            var statusEl = document.getElementById('wcl-status');
+            var saveStatusEl = document.getElementById('wcl-save-status');
+
+            function updateStatus(isEnabled) {
+                if (isEnabled) {
+                    statusEl.innerHTML = '<strong><?php _e('Status: Paywall is ON', 'wp-content-locker'); ?></strong>';
+                    statusEl.style.color = 'green';
+                } else {
+                    statusEl.innerHTML = '<?php _e('Status: Paywall is OFF', 'wp-content-locker'); ?>';
+                    statusEl.style.color = '#666';
+                }
+            }
+
+            function saveMeta() {
+                var value = checkbox.checked ? 'yes' : '';
+                var percent = parseInt(percentInput.value) || 30;
+
+                saveStatusEl.style.display = 'block';
+                saveStatusEl.innerHTML = '<?php _e('Saving...', 'wp-content-locker'); ?>';
+
+                // Use WordPress REST API
+                wp.apiFetch({
+                    path: '/wp/v2/posts/' + postId,
+                    method: 'POST',
+                    data: {
+                        meta: {
+                            _wcl_enable_paywall: value,
+                            _wcl_preview_percentage: percent
+                        }
+                    }
+                }).then(function(response) {
+                    saveStatusEl.innerHTML = '<?php _e('Saved!', 'wp-content-locker'); ?>';
+                    saveStatusEl.style.color = 'green';
+                    setTimeout(function() {
+                        saveStatusEl.style.display = 'none';
+                    }, 2000);
+                    updateStatus(checkbox.checked);
+                }).catch(function(error) {
+                    saveStatusEl.innerHTML = '<?php _e('Error saving. Please try again.', 'wp-content-locker'); ?>';
+                    saveStatusEl.style.color = 'red';
+                    console.error('WCL Save Error:', error);
+                });
+            }
+
+            // Save on checkbox change
+            checkbox.addEventListener('change', function() {
+                saveMeta();
+            });
+
+            // Save on percentage change (debounced)
+            var debounceTimer;
+            percentInput.addEventListener('change', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(saveMeta, 500);
+            });
+        })();
+        </script>
         <?php
     }
 
     /**
-     * Save meta box data
+     * Save meta box data - for classic editor fallback
      */
     public function save_meta_box($post_id) {
-        // Debug log
-        $debug = array();
-        $debug['post_id'] = $post_id;
-        $debug['nonce_isset'] = isset($_POST['wcl_metabox_nonce']);
-        $debug['checkbox_isset'] = isset($_POST['wcl_enable_paywall']);
-        $debug['checkbox_value'] = isset($_POST['wcl_enable_paywall']) ? $_POST['wcl_enable_paywall'] : 'not set';
+        // Skip if this is a REST request (Gutenberg handles it)
+        if (defined('REST_REQUEST') && REST_REQUEST) {
+            return;
+        }
 
-        // Check nonce
+        // Check if our nonce is set (classic editor)
         if (!isset($_POST['wcl_metabox_nonce'])) {
-            $debug['exit_reason'] = 'nonce not set';
-            update_option('wcl_debug_save', $debug);
             return;
         }
 
         if (!wp_verify_nonce($_POST['wcl_metabox_nonce'], 'wcl_save_metabox')) {
-            $debug['exit_reason'] = 'nonce verification failed';
-            update_option('wcl_debug_save', $debug);
             return;
         }
 
-        // Check autosave
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            $debug['exit_reason'] = 'autosave';
-            update_option('wcl_debug_save', $debug);
             return;
         }
 
-        // Check permissions
         if (!current_user_can('edit_post', $post_id)) {
-            $debug['exit_reason'] = 'no permission';
-            update_option('wcl_debug_save', $debug);
             return;
         }
 
-        // Check post type
         if (get_post_type($post_id) !== 'post') {
-            $debug['exit_reason'] = 'not a post type';
-            update_option('wcl_debug_save', $debug);
             return;
         }
 
-        // Save enable paywall - checkbox version
+        // Save enable paywall
         if (isset($_POST['wcl_enable_paywall']) && $_POST['wcl_enable_paywall'] === 'yes') {
-            $result = update_post_meta($post_id, '_wcl_enable_paywall', 'yes');
-            $debug['save_result'] = $result;
-            $debug['saved_value'] = 'yes';
+            update_post_meta($post_id, '_wcl_enable_paywall', 'yes');
         } else {
             delete_post_meta($post_id, '_wcl_enable_paywall');
-            $debug['saved_value'] = 'deleted';
         }
 
         // Save preview percentage
@@ -160,12 +215,6 @@ class WCL_Metabox {
             $percentage = absint($_POST['wcl_preview_percentage']);
             $percentage = max(10, min(90, $percentage));
             update_post_meta($post_id, '_wcl_preview_percentage', $percentage);
-        } else {
-            delete_post_meta($post_id, '_wcl_preview_percentage');
         }
-
-        $debug['success'] = true;
-        update_option('wcl_debug_save', $debug);
     }
 }
-

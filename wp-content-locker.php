@@ -94,9 +94,10 @@ class WP_Content_Locker {
      * Register admin hooks
      */
     private function define_admin_hooks() {
-        // Metabox save must be registered outside is_admin() check
-        // because save_post can be called in different contexts
+        // Metabox - constructor registers meta for REST API (Gutenberg)
         $metabox = new WCL_Metabox();
+
+        // save_post hook for classic editor fallback
         add_action('save_post', array($metabox, 'save_meta_box'), 10, 1);
 
         if (is_admin()) {
