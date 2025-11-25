@@ -94,6 +94,11 @@ class WP_Content_Locker {
      * Register admin hooks
      */
     private function define_admin_hooks() {
+        // Metabox save must be registered outside is_admin() check
+        // because save_post can be called in different contexts
+        $metabox = new WCL_Metabox();
+        add_action('save_post', array($metabox, 'save_meta_box'), 10, 1);
+
         if (is_admin()) {
             $admin = new WCL_Admin();
             add_action('admin_menu', array($admin, 'add_settings_page'));
@@ -101,9 +106,7 @@ class WP_Content_Locker {
             add_action('admin_enqueue_scripts', array($admin, 'enqueue_styles'));
             add_action('admin_enqueue_scripts', array($admin, 'enqueue_scripts'));
 
-            $metabox = new WCL_Metabox();
             add_action('add_meta_boxes', array($metabox, 'add_meta_box'));
-            add_action('save_post', array($metabox, 'save_meta_box'));
         }
     }
 
