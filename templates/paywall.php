@@ -184,7 +184,10 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
                 }
             };
 
-            if (!wclData.isLoggedIn) {
+            // Convert string to boolean if needed
+            var isLoggedIn = wclData.isLoggedIn === true || wclData.isLoggedIn === 'true';
+
+            if (!isLoggedIn) {
                 email = $('#wcl-checkout-email').val();
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                     $('.wcl-modal-error').text(wclData.strings.invalidEmail).show();

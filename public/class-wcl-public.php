@@ -151,9 +151,14 @@ class WCL_Public {
         // Check if email already has active subscription (for non-logged-in users)
         if (!is_user_logged_in() && !empty($email)) {
             $existing_user = get_user_by('email', $email);
-            if ($existing_user && WCL_Subscription::has_active_subscription($existing_user->ID)) {
-                wp_send_json_error(array('message' => __('This email already has an active subscription. Please log in to access premium content.', 'wp-content-locker')));
+            if ($existing_user) {
+                // User exists, check subscription status
+                $has_subscription = WCL_Subscription::has_active_subscription($existing_user->ID);
+                if ($has_subscription) {
+                    wp_send_json_error(array('message' => __('This email already has an active subscription. Please log in to access premium content.', 'wp-content-locker')));
+                }
             }
+            // If user doesn't exist or doesn't have active subscription, allow checkout
         }
 
         // Get price ID based on plan type
