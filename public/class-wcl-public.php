@@ -66,9 +66,35 @@ class WCL_Public {
      * Enqueue public scripts
      */
     public function enqueue_scripts() {
+        // Load on single posts OR when paywall might be injected via JS
         if (!is_singular('post')) {
             return;
         }
+
+        // Check if this post needs paywall
+        $post_id = get_the_ID();
+        if (!WCL_Content::has_paywall($post_id)) {
+            return;
+        }
+
+        // If user can access, no need for paywall scripts
+        if (WCL_Content::user_can_access($post_id)) {
+            return;
+        }
+
+        $this->enqueue_paywall_scripts();
+    }
+
+    /**
+     * Enqueue paywall scripts (can be called from multiple places)
+     */
+    public function enqueue_paywall_scripts() {
+        // Prevent double loading
+        static $loaded = false;
+        if ($loaded) {
+            return;
+        }
+        $loaded = true;
 
         wp_enqueue_script(
             'wcl-public',
@@ -87,6 +113,7 @@ class WCL_Public {
             'strings' => array(
                 'processing' => __('Processing...', 'wp-content-locker'),
                 'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
+                'invalidEmail' => __('Please enter a valid email address.', 'wp-content-locker'),
             ),
         ));
     }
@@ -211,6 +238,9 @@ class WCL_Public {
         if (WCL_Content::user_can_access($post_id)) {
             return;
         }
+
+        // Ensure scripts are loaded
+        $this->enqueue_paywall_scripts();
 
         // Add footer hook to inject paywall via JS
         add_action('wp_footer', array($this, 'inject_paywall_js'), 100);
