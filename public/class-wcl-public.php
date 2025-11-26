@@ -104,6 +104,22 @@ class WCL_Public {
         $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
         $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
 
+        // Check if logged-in user already has active subscription
+        if (is_user_logged_in()) {
+            $user_id = get_current_user_id();
+            if (WCL_Subscription::has_active_subscription($user_id)) {
+                wp_send_json_error(array('message' => __('You already have an active subscription.', 'wp-content-locker')));
+            }
+        }
+
+        // Check if email already has active subscription (for non-logged-in users)
+        if (!is_user_logged_in() && !empty($email)) {
+            $existing_user = get_user_by('email', $email);
+            if ($existing_user && WCL_Subscription::has_active_subscription($existing_user->ID)) {
+                wp_send_json_error(array('message' => __('This email already has an active subscription. Please log in to access premium content.', 'wp-content-locker')));
+            }
+        }
+
         // Get price ID based on plan type
         $price_id = '';
         if ($plan_type === 'yearly') {
