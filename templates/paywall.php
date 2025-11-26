@@ -190,7 +190,14 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
             console.log('WCL: isLoggedIn =', isLoggedIn, 'wclData.isLoggedIn =', wclData.isLoggedIn);
 
             if (!isLoggedIn) {
-                email = $('#wcl-checkout-email').val();
+                // Find the email input that has a value (in case of multiple instances)
+                var $emailInputs = $('input#wcl-checkout-email, input.wcl-checkout-email');
+                $emailInputs.each(function() {
+                    var val = $(this).val();
+                    if (val && val.trim() !== '') {
+                        email = val.trim();
+                    }
+                });
                 console.log('WCL: email from input =', email);
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                     console.log('WCL: Invalid email, showing error');
