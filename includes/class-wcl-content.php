@@ -197,11 +197,26 @@ class WCL_Content {
     }
 
     /**
+     * Track if paywall has been applied to prevent duplicates
+     */
+    private static $paywall_applied = array();
+
+    /**
      * Apply paywall to content if needed
      */
     public static function apply_paywall($content, $post_id = null) {
         if (!$post_id) {
             $post_id = get_the_ID();
+        }
+
+        // Prevent duplicate paywall rendering
+        if (isset(self::$paywall_applied[$post_id])) {
+            return $content;
+        }
+
+        // Check if content already has paywall (from cache or other sources)
+        if (strpos($content, 'wcl-content-wrapper') !== false) {
+            return $content;
         }
 
         // Check if paywall is enabled for this post
@@ -213,6 +228,9 @@ class WCL_Content {
         if (self::user_can_access($post_id)) {
             return $content;
         }
+
+        // Mark as applied
+        self::$paywall_applied[$post_id] = true;
 
         // Truncate content and add paywall
         // Check for post-specific percentage first, then fall back to global setting
