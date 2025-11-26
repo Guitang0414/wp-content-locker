@@ -75,6 +75,7 @@ class WP_Content_Locker {
 
         // Public classes
         require_once WCL_PLUGIN_DIR . 'public/class-wcl-public.php';
+        require_once WCL_PLUGIN_DIR . 'public/class-wcl-account.php';
     }
 
     /**
@@ -139,6 +140,9 @@ class WP_Content_Locker {
 
         // Checkout success handler
         add_action('template_redirect', array($public, 'handle_checkout_success'));
+
+        // Account page shortcode
+        new WCL_Account();
     }
 
     /**

@@ -1,0 +1,332 @@
+/**
+ * WP Content Locker - Account Page Styles
+ */
+
+.wcl-account-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.wcl-account-section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.wcl-account-title {
+    margin: 0 0 25px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+}
+
+/* Login Form */
+.wcl-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.wcl-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wcl-form-field label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.wcl-form-field input[type="text"],
+.wcl-form-field input[type="password"],
+.wcl-form-field input[type="email"] {
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.wcl-form-field input:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+}
+
+.wcl-remember-field {
+    flex-direction: row;
+    align-items: center;
+}
+
+.wcl-remember-field label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.wcl-remember-field input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Buttons */
+.wcl-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    text-decoration: none;
+}
+
+.wcl-btn:hover {
+    transform: translateY(-1px);
+}
+
+.wcl-btn:active {
+    transform: translateY(0);
+}
+
+.wcl-btn-primary {
+    background-color: #2271b1;
+    color: #fff;
+}
+
+.wcl-btn-primary:hover {
+    background-color: #135e96;
+    color: #fff;
+}
+
+.wcl-btn-secondary {
+    background-color: #f0f0f1;
+    color: #1d2327;
+}
+
+.wcl-btn-secondary:hover {
+    background-color: #dcdcde;
+    color: #1d2327;
+}
+
+.wcl-btn-danger {
+    background-color: #d63638;
+    color: #fff;
+}
+
+.wcl-btn-danger:hover {
+    background-color: #b32d2e;
+    color: #fff;
+}
+
+.wcl-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.wcl-login-btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.wcl-forgot-password {
+    text-align: center;
+    margin: 15px 0 0 0;
+}
+
+.wcl-forgot-password a {
+    color: #2271b1;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.wcl-forgot-password a:hover {
+    text-decoration: underline;
+}
+
+.wcl-login-error {
+    background-color: #fcf0f1;
+    border: 1px solid #d63638;
+    color: #d63638;
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+/* User Info */
+.wcl-user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 25px;
+}
+
+.wcl-user-avatar img {
+    border-radius: 50%;
+}
+
+.wcl-user-details {
+    flex: 1;
+}
+
+.wcl-user-name {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.wcl-user-email {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Subscription Section */
+.wcl-subscription-section {
+    margin-bottom: 25px;
+}
+
+.wcl-section-title {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wcl-subscription-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.wcl-subscription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.wcl-subscription-plan {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.wcl-subscription-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.wcl-subscription-details {
+    margin-bottom: 15px;
+}
+
+.wcl-subscription-details p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #444;
+}
+
+.wcl-subscription-details strong {
+    color: #1a1a1a;
+}
+
+.wcl-cancel-note,
+.wcl-expired-note {
+    color: #666;
+    font-style: italic;
+}
+
+.wcl-subscription-actions {
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* No Subscription */
+.wcl-no-subscription {
+    text-align: center;
+    padding: 30px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.wcl-no-subscription p {
+    margin: 0 0 10px 0;
+    color: #666;
+}
+
+.wcl-no-subscription p:last-child {
+    margin-bottom: 0;
+}
+
+/* Notices */
+.wcl-notice {
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.wcl-notice-warning {
+    background-color: #fef3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+.wcl-notice-success {
+    background-color: #d4edda;
+    border: 1px solid #28a745;
+    color: #155724;
+}
+
+/* Logout Section */
+.wcl-logout-section {
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .wcl-account-wrapper {
+        padding: 10px;
+    }
+
+    .wcl-account-section {
+        padding: 20px;
+    }
+
+    .wcl-user-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .wcl-subscription-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
