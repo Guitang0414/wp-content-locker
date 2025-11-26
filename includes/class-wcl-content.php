@@ -209,16 +209,6 @@ class WCL_Content {
             $post_id = get_the_ID();
         }
 
-        // Prevent duplicate paywall rendering
-        if (isset(self::$paywall_applied[$post_id])) {
-            return $content;
-        }
-
-        // Check if content already has paywall (from cache or other sources)
-        if (strpos($content, 'wcl-content-wrapper') !== false) {
-            return $content;
-        }
-
         // Check if paywall is enabled for this post
         if (!self::has_paywall($post_id)) {
             return $content;
@@ -226,6 +216,18 @@ class WCL_Content {
 
         // Check if user can access
         if (self::user_can_access($post_id)) {
+            return $content;
+        }
+
+        // Prevent duplicate paywall rendering within same request
+        if (isset(self::$paywall_applied[$post_id])) {
+            // If paywall was already applied, return content without re-wrapping
+            // But check if this content already has the wrapper
+            if (strpos($content, 'wcl-content-wrapper') !== false) {
+                return $content;
+            }
+            // Content doesn't have wrapper but we already applied it somewhere else
+            // Just return truncated content without another paywall
             return $content;
         }
 
