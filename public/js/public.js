@@ -1,5 +1,5 @@
 /**
- * WP Content Locker Public Scripts
+ * WP Content Locker Public Scripts - WSJ/WaPo Style
  */
 
 (function($) {
@@ -16,42 +16,79 @@
         bindEvents: function() {
             var self = this;
 
-            // Plan selection
-            $(document).on('click', '.wcl-price-card', function() {
+            // Open modal button (Step 1 -> Step 2)
+            $(document).on('click', '.wcl-open-modal-btn', function(e) {
+                e.preventDefault();
+                self.openModal();
+            });
+
+            // Close modal
+            $(document).on('click', '.wcl-modal-close', function(e) {
+                e.preventDefault();
+                self.closeModal();
+            });
+
+            // Close modal on overlay click
+            $(document).on('click', '.wcl-modal-overlay', function(e) {
+                if ($(e.target).hasClass('wcl-modal-overlay')) {
+                    self.closeModal();
+                }
+            });
+
+            // Close modal on ESC key
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    self.closeModal();
+                }
+            });
+
+            // Plan selection in modal
+            $(document).on('click', '.wcl-plan-card', function() {
                 var $card = $(this);
                 var plan = $card.data('plan');
 
                 // Update selection
-                $('.wcl-price-card').removeClass('selected');
+                $('.wcl-plan-card').removeClass('selected');
                 $card.addClass('selected');
                 self.selectedPlan = plan;
             });
 
-            // Subscribe button
-            $(document).on('click', '.wcl-subscribe-btn', function(e) {
+            // Checkout button in modal
+            $(document).on('click', '.wcl-checkout-btn', function(e) {
                 e.preventDefault();
-                self.handleSubscribe();
+                self.handleCheckout();
             });
 
             // Email input enter key
-            $(document).on('keypress', '.wcl-email-input input', function(e) {
+            $(document).on('keypress', '#wcl-checkout-email', function(e) {
                 if (e.which === 13) {
                     e.preventDefault();
-                    self.handleSubscribe();
+                    self.handleCheckout();
                 }
             });
         },
 
-        handleSubscribe: function() {
+        openModal: function() {
+            $('.wcl-modal-overlay').fadeIn(200);
+            $('body').css('overflow', 'hidden');
+        },
+
+        closeModal: function() {
+            $('.wcl-modal-overlay').fadeOut(200);
+            $('body').css('overflow', '');
+            this.hideError();
+        },
+
+        handleCheckout: function() {
             var self = this;
-            var $btn = $('.wcl-subscribe-btn');
+            var $btn = $('.wcl-checkout-btn');
             var email = '';
 
             // Get email if not logged in
             if (!wclData.isLoggedIn) {
-                email = $('.wcl-email-input input').val().trim();
+                email = $('#wcl-checkout-email').val().trim();
                 if (!email || !self.isValidEmail(email)) {
-                    self.showError(wclData.strings.error || 'Please enter a valid email address.');
+                    self.showError(wclData.strings.invalidEmail || 'Please enter a valid email address.');
                     return;
                 }
             }
@@ -96,19 +133,14 @@
         },
 
         showError: function(message) {
-            var $paywall = $('.wcl-paywall');
-            var $error = $paywall.find('.wcl-error');
-
-            if ($error.length === 0) {
-                $error = $('<div class="wcl-error"></div>');
-                $paywall.find('.wcl-paywall-description').after($error);
+            var $error = $('.wcl-modal-error');
+            if ($error.length) {
+                $error.text(message).show();
             }
-
-            $error.text(message).show();
         },
 
         hideError: function() {
-            $('.wcl-error').hide();
+            $('.wcl-modal-error').hide();
         },
 
         checkSuccessMessage: function() {
