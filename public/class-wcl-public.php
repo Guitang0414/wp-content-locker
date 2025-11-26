@@ -66,22 +66,12 @@ class WCL_Public {
      * Enqueue public scripts
      */
     public function enqueue_scripts() {
-        // Load on single posts OR when paywall might be injected via JS
+        // Always load on single posts - let JS handle the rest
         if (!is_singular('post')) {
             return;
         }
 
-        // Check if this post needs paywall
-        $post_id = get_the_ID();
-        if (!WCL_Content::has_paywall($post_id)) {
-            return;
-        }
-
-        // If user can access, no need for paywall scripts
-        if (WCL_Content::user_can_access($post_id)) {
-            return;
-        }
-
+        // Always load scripts on posts, the paywall template will be there if needed
         $this->enqueue_paywall_scripts();
     }
 
