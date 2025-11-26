@@ -124,6 +124,10 @@ class WP_Content_Locker {
         // Elementor compatibility
         add_filter('elementor/frontend/the_content', array($public, 'filter_content'), 99);
 
+        // tagDiv / Starter Templates theme compatibility
+        add_filter('tdc_single_content', array($public, 'filter_content'), 99);
+        add_filter('td_module_content', array($public, 'filter_content'), 99);
+
         // Alternative: Hook into template_redirect for full page control
         add_action('template_redirect', array($public, 'maybe_apply_paywall_redirect'));
 

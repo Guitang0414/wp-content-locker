@@ -278,8 +278,12 @@ class WCL_Public {
         ?>
         <script>
         (function() {
-            // Find the main content area
+            // Find the main content area - prioritize tagDiv theme selectors
             var selectors = [
+                '.tdb_single_content .tdb-block-inner',
+                '.tdb_single_content',
+                '.td-post-content',
+                '.td_block_wrap.tdb_single_content',
                 '.elementor-widget-theme-post-content .elementor-widget-container',
                 '.elementor-widget-text-editor .elementor-widget-container',
                 '.entry-content',
@@ -291,16 +295,19 @@ class WCL_Public {
 
             var contentEl = null;
             for (var i = 0; i < selectors.length; i++) {
-                contentEl = document.querySelector(selectors[i]);
-                if (contentEl && contentEl.innerText.length > 100) {
+                var el = document.querySelector(selectors[i]);
+                // Make sure it's not inside a popup modal
+                if (el && el.innerText.length > 100 && !el.closest('.tdm-popup-modal')) {
+                    contentEl = el;
                     break;
                 }
             }
 
             if (!contentEl) return;
 
-            // Check if paywall already applied
-            if (document.querySelector('.wcl-paywall')) return;
+            // Check if paywall already applied (not in popup)
+            var existingPaywall = document.querySelector('.wcl-paywall');
+            if (existingPaywall && !existingPaywall.closest('.tdm-popup-modal')) return;
 
             // Get text content length
             var fullText = contentEl.innerText;
