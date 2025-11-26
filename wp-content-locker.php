@@ -127,8 +127,8 @@ class WP_Content_Locker {
         // Alternative: Hook into template_redirect for full page control
         add_action('template_redirect', array($public, 'maybe_apply_paywall_redirect'));
 
-        add_action('wp_enqueue_scripts', array($public, 'enqueue_styles'));
-        add_action('wp_enqueue_scripts', array($public, 'enqueue_scripts'));
+        add_action('wp_enqueue_scripts', array($public, 'enqueue_styles'), 10);
+        add_action('wp_enqueue_scripts', array($public, 'enqueue_scripts'), 10);
 
         // AJAX handlers
         add_action('wp_ajax_wcl_create_checkout', array($public, 'create_checkout_session'));

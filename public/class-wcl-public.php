@@ -72,7 +72,26 @@ class WCL_Public {
         }
 
         // Always load scripts on posts, the paywall template will be there if needed
-        $this->enqueue_paywall_scripts();
+        wp_enqueue_script(
+            'wcl-public',
+            WCL_PLUGIN_URL . 'public/js/public.js',
+            array('jquery'),
+            WCL_VERSION . '.' . time(),
+            true
+        );
+
+        // Localize script with necessary data
+        wp_localize_script('wcl-public', 'wclData', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('wcl_checkout_nonce'),
+            'postId' => get_the_ID(),
+            'isLoggedIn' => is_user_logged_in(),
+            'strings' => array(
+                'processing' => __('Processing...', 'wp-content-locker'),
+                'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
+                'invalidEmail' => __('Please enter a valid email address.', 'wp-content-locker'),
+            ),
+        ));
     }
 
     /**

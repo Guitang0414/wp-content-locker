@@ -115,3 +115,118 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
         </div>
     </div>
 </div>
+
+<!-- Inline fallback script for modal functionality -->
+<script>
+(function() {
+    // Wait for jQuery
+    function initWCLModal() {
+        if (typeof jQuery === 'undefined') {
+            setTimeout(initWCLModal, 100);
+            return;
+        }
+
+        var $ = jQuery;
+        var selectedPlan = 'monthly';
+
+        // Open modal
+        $(document).off('click.wcl-modal').on('click.wcl-modal', '.wcl-open-modal-btn', function(e) {
+            e.preventDefault();
+            $('.wcl-modal-overlay').fadeIn(200);
+            $('body').css('overflow', 'hidden');
+        });
+
+        // Close modal
+        $(document).off('click.wcl-close').on('click.wcl-close', '.wcl-modal-close', function(e) {
+            e.preventDefault();
+            $('.wcl-modal-overlay').fadeOut(200);
+            $('body').css('overflow', '');
+        });
+
+        // Close on overlay click
+        $(document).off('click.wcl-overlay').on('click.wcl-overlay', '.wcl-modal-overlay', function(e) {
+            if ($(e.target).hasClass('wcl-modal-overlay')) {
+                $('.wcl-modal-overlay').fadeOut(200);
+                $('body').css('overflow', '');
+            }
+        });
+
+        // Close on ESC
+        $(document).off('keydown.wcl').on('keydown.wcl', function(e) {
+            if (e.key === 'Escape') {
+                $('.wcl-modal-overlay').fadeOut(200);
+                $('body').css('overflow', '');
+            }
+        });
+
+        // Plan selection
+        $(document).off('click.wcl-plan').on('click.wcl-plan', '.wcl-plan-card', function() {
+            $('.wcl-plan-card').removeClass('selected');
+            $(this).addClass('selected');
+            selectedPlan = $(this).data('plan');
+        });
+
+        // Checkout button
+        $(document).off('click.wcl-checkout').on('click.wcl-checkout', '.wcl-checkout-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var email = '';
+
+            // Get wclData from global or use defaults
+            var wclData = window.wclData || {
+                ajaxUrl: '<?php echo esc_js(admin_url('admin-ajax.php')); ?>',
+                nonce: '<?php echo esc_js(wp_create_nonce('wcl_checkout_nonce')); ?>',
+                postId: <?php echo intval($post_id); ?>,
+                isLoggedIn: <?php echo is_user_logged_in() ? 'true' : 'false'; ?>,
+                strings: {
+                    invalidEmail: '<?php echo esc_js(__('Please enter a valid email address.', 'wp-content-locker')); ?>',
+                    error: '<?php echo esc_js(__('An error occurred. Please try again.', 'wp-content-locker')); ?>'
+                }
+            };
+
+            if (!wclData.isLoggedIn) {
+                email = $('#wcl-checkout-email').val();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    $('.wcl-modal-error').text(wclData.strings.invalidEmail).show();
+                    return;
+                }
+            }
+
+            $btn.prop('disabled', true).addClass('loading');
+            $('.wcl-modal-error').hide();
+
+            $.ajax({
+                url: wclData.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'wcl_create_checkout',
+                    nonce: wclData.nonce,
+                    plan_type: selectedPlan,
+                    post_id: wclData.postId,
+                    email: email
+                },
+                success: function(response) {
+                    if (response.success && response.data.checkout_url) {
+                        window.location.href = response.data.checkout_url;
+                    } else {
+                        var msg = response.data && response.data.message ? response.data.message : wclData.strings.error;
+                        $('.wcl-modal-error').text(msg).show();
+                        $btn.prop('disabled', false).removeClass('loading');
+                    }
+                },
+                error: function() {
+                    $('.wcl-modal-error').text(wclData.strings.error).show();
+                    $btn.prop('disabled', false).removeClass('loading');
+                }
+            });
+        });
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWCLModal);
+    } else {
+        initWCLModal();
+    }
+})();
+</script>
