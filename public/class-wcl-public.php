@@ -138,7 +138,12 @@ class WCL_Public {
 
         $plan_type = isset($_POST['plan_type']) ? sanitize_text_field($_POST['plan_type']) : 'monthly';
         $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
-        $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
+
+        // Use filter_var instead of sanitize_email to preserve valid emails with numbers at start
+        $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+        if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $email = ''; // Invalid email
+        }
 
         // Check if logged-in user already has active subscription
         if (is_user_logged_in()) {
@@ -151,18 +156,6 @@ class WCL_Public {
         // Check if email already has active subscription (for non-logged-in users)
         if (!is_user_logged_in() && !empty($email)) {
             $existing_user = get_user_by('email', $email);
-
-            // Debug: Return info about what we found
-            if (isset($_POST['wcl_debug']) && $_POST['wcl_debug'] === '1') {
-                wp_send_json_success(array(
-                    'debug' => true,
-                    'email' => $email,
-                    'user_exists' => $existing_user ? true : false,
-                    'user_id' => $existing_user ? $existing_user->ID : null,
-                    'has_subscription' => $existing_user ? WCL_Subscription::has_active_subscription($existing_user->ID) : false,
-                ));
-            }
-
             if ($existing_user) {
                 // User exists, check subscription status
                 $has_subscription = WCL_Subscription::has_active_subscription($existing_user->ID);
