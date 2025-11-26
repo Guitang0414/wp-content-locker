@@ -129,6 +129,12 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
         var $ = jQuery;
         var selectedPlan = 'monthly';
 
+        // Move modal to body to avoid being trapped in popups/overlays
+        var $modal = $('.wcl-modal-overlay').first();
+        if ($modal.length && !$modal.parent().is('body')) {
+            $modal.appendTo('body');
+        }
+
         // Open modal
         $(document).off('click.wcl-modal').on('click.wcl-modal', '.wcl-open-modal-btn', function(e) {
             e.preventDefault();
