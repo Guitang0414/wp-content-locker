@@ -151,6 +151,18 @@ class WCL_Public {
         // Check if email already has active subscription (for non-logged-in users)
         if (!is_user_logged_in() && !empty($email)) {
             $existing_user = get_user_by('email', $email);
+
+            // Debug: Return info about what we found
+            if (isset($_POST['wcl_debug']) && $_POST['wcl_debug'] === '1') {
+                wp_send_json_success(array(
+                    'debug' => true,
+                    'email' => $email,
+                    'user_exists' => $existing_user ? true : false,
+                    'user_id' => $existing_user ? $existing_user->ID : null,
+                    'has_subscription' => $existing_user ? WCL_Subscription::has_active_subscription($existing_user->ID) : false,
+                ));
+            }
+
             if ($existing_user) {
                 // User exists, check subscription status
                 $has_subscription = WCL_Subscription::has_active_subscription($existing_user->ID);
