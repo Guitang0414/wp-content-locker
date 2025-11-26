@@ -169,6 +169,7 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
         // Checkout button
         $(document).off('click.wcl-checkout').on('click.wcl-checkout', '.wcl-checkout-btn', function(e) {
             e.preventDefault();
+            console.log('WCL: Checkout button clicked');
             var $btn = $(this);
             var email = '';
 
@@ -186,15 +187,19 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
 
             // Convert string to boolean if needed
             var isLoggedIn = wclData.isLoggedIn === true || wclData.isLoggedIn === 'true';
+            console.log('WCL: isLoggedIn =', isLoggedIn, 'wclData.isLoggedIn =', wclData.isLoggedIn);
 
             if (!isLoggedIn) {
                 email = $('#wcl-checkout-email').val();
+                console.log('WCL: email from input =', email);
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    console.log('WCL: Invalid email, showing error');
                     $('.wcl-modal-error').text(wclData.strings.invalidEmail).show();
                     return;
                 }
             }
 
+            console.log('WCL: Sending AJAX request with email =', email, 'plan =', selectedPlan);
             $btn.prop('disabled', true).addClass('loading');
             $('.wcl-modal-error').hide();
 
@@ -209,15 +214,19 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
                     email: email
                 },
                 success: function(response) {
+                    console.log('WCL: AJAX response =', response);
                     if (response.success && response.data.checkout_url) {
+                        console.log('WCL: Redirecting to', response.data.checkout_url);
                         window.location.href = response.data.checkout_url;
                     } else {
                         var msg = response.data && response.data.message ? response.data.message : wclData.strings.error;
+                        console.log('WCL: Error message =', msg);
                         $('.wcl-modal-error').text(msg).show();
                         $btn.prop('disabled', false).removeClass('loading');
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.log('WCL: AJAX error =', status, error);
                     $('.wcl-modal-error').text(wclData.strings.error).show();
                     $btn.prop('disabled', false).removeClass('loading');
                 }
