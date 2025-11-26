@@ -99,7 +99,11 @@ class WCL_User {
         }
 
         $site_name = get_bloginfo('name');
-        $login_url = wp_login_url();
+
+        // Try to find My Account page with [wcl_account] shortcode
+        global $wpdb;
+        $account_page_id = $wpdb->get_var("SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE '%[wcl_account]%' AND post_status = 'publish' AND post_type = 'page' LIMIT 1");
+        $login_url = $account_page_id ? get_permalink($account_page_id) : wp_login_url();
 
         $subject = sprintf(
             /* translators: %s: site name */
