@@ -73,6 +73,13 @@
     line-height: 1.3;
 }
 
+.wcl-paywall-description {
+    font-size: 18px;
+    color: #444;
+    margin: -15px 0 30px;
+    line-height: 1.5;
+}
+
 /* Subscribe button */
 .wcl-subscribe-btn {
     display: inline-block;

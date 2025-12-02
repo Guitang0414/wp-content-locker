@@ -48,6 +48,7 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
     </div>
 
     <h3 class="wcl-paywall-title"><?php echo esc_html($title); ?></h3>
+    <p class="wcl-paywall-description"><?php echo esc_html($description); ?></p>
 
     <button type="button" class="wcl-subscribe-btn wcl-open-modal-btn">
         <?php echo esc_html($button_text); ?>
