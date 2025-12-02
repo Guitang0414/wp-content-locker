@@ -148,6 +148,27 @@ class WCL_Stripe {
     }
 
     /**
+     * Find promotion code by code
+     */
+    public function find_promotion_code($code) {
+        $result = $this->api_request('/promotion_codes', 'GET', array(
+            'code' => $code,
+            'active' => 'true',
+            'limit' => 1,
+        ));
+
+        if (is_wp_error($result)) {
+            return $result;
+        }
+
+        if (!empty($result['data'])) {
+            return $result['data'][0];
+        }
+
+        return null;
+    }
+
+    /**
      * Create a Checkout Session
      */
     public function create_checkout_session($params) {
@@ -164,8 +185,15 @@ class WCL_Stripe {
             'line_items[0][quantity]' => 1,
             'success_url' => $success_url,
             'cancel_url' => $cancel_url,
+            'cancel_url' => $cancel_url,
             'allow_promotion_codes' => 'true',
         );
+
+        if (isset($params['discounts'])) {
+            $data['discounts'] = $params['discounts'];
+            // When discounts are applied, allow_promotion_codes cannot be true
+            unset($data['allow_promotion_codes']);
+        }
 
         if (!empty($customer_id)) {
             $data['customer'] = $customer_id;

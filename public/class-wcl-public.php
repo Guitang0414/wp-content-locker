@@ -225,6 +225,20 @@ class WCL_Public {
 
         // Create checkout session
         $stripe = WCL_Stripe::get_instance();
+
+        // Auto-apply promo code for monthly plan
+        if ($plan_type === 'monthly') {
+            $promo_code = get_option('wcl_promo_code', 'NEWUSER');
+            if (!empty($promo_code)) {
+                $promotion = $stripe->find_promotion_code($promo_code);
+                if ($promotion && !is_wp_error($promotion)) {
+                    $params['discounts'] = array(
+                        array('promotion_code' => $promotion['id']),
+                    );
+                }
+            }
+        }
+
         $session = $stripe->create_checkout_session($params);
 
         if (is_wp_error($session)) {
@@ -232,14 +246,6 @@ class WCL_Public {
         }
 
         $checkout_url = $session['url'];
-        
-        // Auto-apply promo code for monthly plan
-        if ($plan_type === 'monthly') {
-            $promo_code = get_option('wcl_promo_code', 'NEWUSER');
-            if (!empty($promo_code)) {
-                $checkout_url = add_query_arg('prefilled_promo_code', $promo_code, $checkout_url);
-            }
-        }
 
         wp_send_json_success(array(
             'checkout_url' => $checkout_url,
