@@ -136,8 +136,8 @@
 .wcl-modal {
     background: #fff;
     border-radius: 8px;
-    max-width: 500px;
-    width: 100%;
+    max-width: 750px;
+    width: 90%;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -184,7 +184,7 @@
 
 /* Modal header */
 .wcl-modal-header {
-    padding: 30px 30px 20px;
+    padding: 20px 30px 15px;
     text-align: center;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -200,18 +200,12 @@
     margin-bottom: 15px;
 }
 
-.wcl-offer-badge::before {
-    content: 'WP ';
-    font-family: Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-}
 
 .wcl-modal-title {
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
-    margin: 0 0 15px;
+    margin: 0 0 10px;
     color: #1a1a1a;
     line-height: 1.2;
 }
@@ -228,7 +222,7 @@
 
 /* Modal body */
 .wcl-modal-body {
-    padding: 30px;
+    padding: 20px 30px;
 }
 
 /* Features section */
@@ -270,7 +264,7 @@
     flex: 1;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    padding: 20px 15px;
+    padding: 15px 10px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -300,7 +294,7 @@
 }
 
 .wcl-plan-strikethrough {
-    font-size: 24px;
+    font-size: 18px;
     color: #999;
     text-decoration: line-through;
     font-weight: 400;
@@ -309,7 +303,7 @@
 }
 
 .wcl-plan-price-large {
-    font-size: 48px;
+    font-size: 42px;
     font-weight: 400;
     color: #000;
     line-height: 1;
