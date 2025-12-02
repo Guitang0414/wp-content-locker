@@ -74,11 +74,27 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
         <?php endif; ?>
 
         <div class="wcl-modal-header">
-            <div class="wcl-modal-brand"><?php echo esc_html($site_name); ?></div>
-            <h2 class="wcl-modal-title"><?php echo esc_html($description); ?></h2>
+            <div class="wcl-offer-badge">LIMITED TIME OFFER</div>
+            <h2 class="wcl-modal-title">Independent News for Independent Thinkers</h2>
+            <div class="wcl-offer-details">
+                <p><strong>Special Offer:</strong></p>
+                <p>✨ Only $0.50/week for the first 3 months</p>
+                <p>Then $2/week. Cancel anytime.</p>
+            </div>
         </div>
 
         <div class="wcl-modal-body">
+            <div class="wcl-features-section">
+                <h3>What You Get:</h3>
+                <ul class="wcl-features-list">
+                    <li>✔ Unlimited access to all articles</li>
+                    <li>✔ Independent, agenda-free reporting</li>
+                    <li>✔ Fearless investigations on CCP influence</li>
+                    <li>✔ 24/7 news updates</li>
+                    <li>✔ Weekly Insider newsletter</li>
+                </ul>
+            </div>
+
             <div class="wcl-plan-cards">
                 <div class="wcl-plan-card selected" data-plan="monthly">
                     <div class="wcl-plan-label"><?php _e('Monthly', 'wp-content-locker'); ?></div>
