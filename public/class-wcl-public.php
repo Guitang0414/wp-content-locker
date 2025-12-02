@@ -231,8 +231,18 @@ class WCL_Public {
             wp_send_json_error(array('message' => $session->get_error_message()));
         }
 
+        $checkout_url = $session['url'];
+        
+        // Auto-apply promo code for monthly plan
+        if ($plan_type === 'monthly') {
+            $promo_code = get_option('wcl_promo_code', 'NEWUSER');
+            if (!empty($promo_code)) {
+                $checkout_url = add_query_arg('prefilled_promo_code', $promo_code, $checkout_url);
+            }
+        }
+
         wp_send_json_success(array(
-            'checkout_url' => $session['url'],
+            'checkout_url' => $checkout_url,
         ));
     }
 

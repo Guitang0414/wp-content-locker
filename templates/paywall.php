@@ -95,13 +95,22 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
                 </ul>
             </div>
 
+<?php
+// Get configurable values
+$monthly_original = get_option('wcl_monthly_original_price', '$2');
+$monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢');
+$monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $8.99 per month');
+?>
             <div class="wcl-plan-cards">
                 <div class="wcl-plan-card selected" data-plan="monthly">
                     <div class="wcl-plan-label"><?php _e('Monthly', 'wp-content-locker'); ?></div>
                     <div class="wcl-plan-price">
-                        <span class="wcl-price-amount">$<?php echo esc_html($monthly_price); ?></span>
+                        <div class="wcl-plan-strikethrough"><?php echo esc_html($monthly_original); ?></div>
+                        <div class="wcl-plan-price-large"><?php echo esc_html($monthly_discounted); ?></div>
                     </div>
-                    <div class="wcl-plan-period"><?php _e('per month', 'wp-content-locker'); ?></div>
+                    <div class="wcl-plan-description">
+                        <?php echo wp_kses_post($monthly_desc); ?>
+                    </div>
                 </div>
 
                 <div class="wcl-plan-card" data-plan="yearly">
