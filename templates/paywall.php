@@ -15,10 +15,30 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Get configurable values
+$monthly_original = get_option('wcl_monthly_original_price', '$2');
+$monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢');
+$monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $8.99 per month');
+
 // Calculate yearly savings
+$yearly_original_str = get_option('wcl_yearly_original_price', '');
+$yearly_original_val = 0;
+if (!empty($yearly_original_str)) {
+    // Remove non-numeric characters except dot
+    $yearly_original_val = floatval(preg_replace('/[^0-9.]/', '', $yearly_original_str));
+}
+
 $monthly_total = floatval($monthly_price) * 12;
 $yearly_total = floatval($yearly_price);
-$savings_percent = $monthly_total > 0 ? round((($monthly_total - $yearly_total) / $monthly_total) * 100) : 0;
+
+// Use configured original price as base if available, otherwise use monthly * 12
+$base_price = ($yearly_original_val > 0) ? $yearly_original_val : $monthly_total;
+$savings_percent = $base_price > 0 ? round((($base_price - $yearly_total) / $base_price) * 100) : 0;
+
+// Format yearly original price for display if not set
+if (empty($yearly_original_str) && $monthly_total > 0) {
+    $yearly_original_str = '$' . number_format($monthly_total, 2);
+}
 
 // Get site name for branding
 $site_name = get_bloginfo('name');
@@ -95,12 +115,6 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
                 </ul>
             </div>
 
-<?php
-// Get configurable values
-$monthly_original = get_option('wcl_monthly_original_price', '$2');
-$monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢');
-$monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $8.99 per month');
-?>
             <div class="wcl-plan-cards">
                 <div class="wcl-plan-card selected" data-plan="monthly">
                     <div class="wcl-plan-label"><?php _e('Monthly', 'wp-content-locker'); ?></div>
@@ -114,11 +128,8 @@ $monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 mo
                 </div>
 
 <?php
-                    // Calculate yearly original price if not set
-                    $yearly_original = get_option('wcl_yearly_original_price', '');
-                    if (empty($yearly_original) && $monthly_total > 0) {
-                        $yearly_original = '$' . number_format($monthly_total, 2);
-                    }
+                    // Use the pre-calculated yearly original price string
+                    $yearly_original = $yearly_original_str;
                     ?>
                 <div class="wcl-plan-card" data-plan="yearly">
                     <div class="wcl-plan-label"><?php _e('Yearly', 'wp-content-locker'); ?></div>
