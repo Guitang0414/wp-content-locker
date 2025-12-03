@@ -399,12 +399,17 @@ class WCL_Stripe {
         }
 
         // Get subscription details
-        $subscription = $this->get_subscription($subscription_id);
+        $subscription = null;
+        if (isset($session['subscription']) && is_array($session['subscription'])) {
+            $subscription = $session['subscription'];
+        } else {
+            $subscription = $this->get_subscription($subscription_id);
+        }
         $plan_type = 'monthly';
         $period_start = null;
         $period_end = null;
 
-        if (!is_wp_error($subscription)) {
+        if ($subscription && !is_wp_error($subscription)) {
             // Determine plan type from interval
             if (isset($subscription['items']['data'][0]['price']['recurring']['interval'])) {
                 $interval = $subscription['items']['data'][0]['price']['recurring']['interval'];
