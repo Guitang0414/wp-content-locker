@@ -328,9 +328,10 @@
 }
 
 .wcl-plan-savings {
-    font-size: 13px;
-    color: #d32f2f;
-    font-weight: 600;
+    font-size: 18px;
+    color: #2e7d32;
+    /* Green */
+    font-weight: 700;
     margin-top: 8px;
 }
 

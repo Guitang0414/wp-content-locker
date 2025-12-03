@@ -195,6 +195,17 @@ class WCL_Admin {
             array('name' => 'wcl_yearly_price_id', 'placeholder' => 'price_xxx', 'class' => 'regular-text')
         );
 
+        // Yearly Original Price (for strikethrough)
+        register_setting('wcl_settings', 'wcl_yearly_original_price');
+        add_settings_field(
+            'wcl_yearly_original_price',
+            __('Yearly Original Price', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_pricing_section',
+            array('name' => 'wcl_yearly_original_price', 'placeholder' => '$105', 'class' => 'small-text', 'description' => __('Displayed with strikethrough', 'wp-content-locker'))
+        );
+
         // Yearly Display Price
         register_setting('wcl_settings', 'wcl_yearly_price');
         add_settings_field(
