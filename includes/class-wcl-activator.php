@@ -48,6 +48,7 @@ class WCL_Activator {
             stripe_customer_id varchar(255) NOT NULL,
             stripe_subscription_id varchar(255) NOT NULL,
             plan_type varchar(50) NOT NULL,
+            mode varchar(10) DEFAULT 'test',
             status varchar(50) NOT NULL DEFAULT 'active',
             current_period_start datetime DEFAULT NULL,
             current_period_end datetime DEFAULT NULL,

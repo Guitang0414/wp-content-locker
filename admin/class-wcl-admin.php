@@ -500,6 +500,19 @@ class WCL_Admin {
         global $wpdb;
         $table_name = $wpdb->prefix . 'wcl_subscriptions';
         
+        // Handle deletion
+        if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+            check_admin_referer('wcl_delete_subscription');
+            $id = absint($_GET['id']);
+            
+            $result = WCL_Subscription::delete_subscription($id);
+            if (is_wp_error($result)) {
+                add_settings_error('wcl_messages', 'wcl_error', $result->get_error_message(), 'error');
+            } else {
+                add_settings_error('wcl_messages', 'wcl_success', __('Subscription deleted.', 'wp-content-locker'), 'updated');
+            }
+        }
+
         // Handle search
         $search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
         $where = '';
@@ -528,6 +541,7 @@ class WCL_Admin {
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('Subscriptions', 'wp-content-locker'); ?></h1>
+            <?php settings_errors('wcl_messages'); ?>
             <form method="get">
                 <input type="hidden" name="page" value="wcl-subscriptions" />
                 <?php
@@ -542,6 +556,7 @@ class WCL_Admin {
                         <th>ID</th>
                         <th>User</th>
                         <th>Plan</th>
+                        <th>Mode</th>
                         <th>Status</th>
                         <th>Started</th>
                         <th>Ends</th>
@@ -561,16 +576,25 @@ class WCL_Admin {
                             $status_class = 'status-' . $sub->status;
                             $status_label = WCL_Subscription::get_status_label($sub->status);
                             
-                            // Style status
                             $status_style = '';
                             if ($sub->status === 'active') $status_style = 'color:green;font-weight:bold;';
                             elseif ($sub->status === 'canceled') $status_style = 'color:red;';
                             elseif ($sub->status === 'past_due') $status_style = 'color:orange;';
+
+                            $delete_url = wp_nonce_url(
+                                add_query_arg(array('action' => 'delete', 'id' => $sub->id), menu_page_url('wcl-subscriptions', false)),
+                                'wcl_delete_subscription'
+                            );
                         ?>
                             <tr>
                                 <td><?php echo esc_html($sub->id); ?></td>
-                                <td><?php echo $user_link; ?></td>
+                                <td><?php echo $user_link; ?>
+                                    <div class="row-actions">
+                                        <span class="trash"><a href="<?php echo esc_url($delete_url); ?>" class="submitdelete" onclick="return confirm('<?php _e('Are you sure you want to delete this subscription?', 'wp-content-locker'); ?>');"><?php _e('Delete', 'wp-content-locker'); ?></a></span>
+                                    </div>
+                                </td>
                                 <td><?php echo esc_html(ucfirst($sub->plan_type)); ?></td>
+                                <td><?php echo isset($sub->mode) ? esc_html(ucfirst($sub->mode)) : '-'; ?></td>
                                 <td><span style="<?php echo esc_attr($status_style); ?>"><?php echo esc_html($status_label); ?></span></td>
                                 <td><?php echo esc_html($sub->current_period_start); ?></td>
                                 <td><?php echo esc_html($sub->current_period_end); ?></td>

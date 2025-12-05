@@ -28,6 +28,7 @@ class WCL_Subscription {
             'stripe_customer_id' => '',
             'stripe_subscription_id' => '',
             'plan_type' => 'monthly',
+            'mode' => 'test',
             'status' => 'active',
             'current_period_start' => null,
             'current_period_end' => null,
@@ -48,11 +49,12 @@ class WCL_Subscription {
                 'stripe_customer_id' => $data['stripe_customer_id'],
                 'stripe_subscription_id' => $data['stripe_subscription_id'],
                 'plan_type' => $data['plan_type'],
+                'mode' => $data['mode'],
                 'status' => $data['status'],
                 'current_period_start' => $data['current_period_start'],
                 'current_period_end' => $data['current_period_end'],
             ),
-            array('%d', '%s', '%s', '%s', '%s', '%s', '%s')
+            array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
         );
 
         if ($result === false) {
@@ -212,6 +214,44 @@ class WCL_Subscription {
 
         // Update user meta
         update_user_meta($subscription->user_id, '_wcl_subscription_status', $status);
+
+        return true;
+    }
+
+    /**
+     * Delete subscription
+     */
+    public static function delete_subscription($subscription_id) {
+        global $wpdb;
+
+        $subscription = self::get_subscription($subscription_id);
+        if (!$subscription) {
+            return new WP_Error('not_found', __('Subscription not found.', 'wp-content-locker'));
+        }
+
+        $result = $wpdb->delete(
+            self::get_table_name(),
+            array('id' => $subscription_id),
+            array('%d')
+        );
+
+        if ($result === false) {
+            return new WP_Error('db_error', __('Failed to delete subscription.', 'wp-content-locker'));
+        }
+
+        // Clean up user meta if this was their active subscription
+        $user_id = $subscription->user_id;
+        $active_sub = self::get_active_subscription($user_id);
+        if (!$active_sub) {
+            delete_user_meta($user_id, '_wcl_subscription_status');
+            delete_user_meta($user_id, '_wcl_stripe_customer_id');
+            
+            // Revert role if they have no other subscriptions
+            $user = get_user_by('id', $user_id);
+            if ($user && in_array('subscriber', (array) $user->roles)) {
+                $user->remove_role('subscriber');
+            }
+        }
 
         return true;
     }
