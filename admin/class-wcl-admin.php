@@ -118,15 +118,26 @@ class WCL_Admin {
             'wp-content-locker'
         );
 
-        // Monthly Price ID
-        register_setting('wcl_settings', 'wcl_monthly_price_id');
+        // Monthly Price ID (Test)
+        register_setting('wcl_settings', 'wcl_monthly_price_id_test');
         add_settings_field(
-            'wcl_monthly_price_id',
-            __('Monthly Price ID', 'wp-content-locker'),
+            'wcl_monthly_price_id_test',
+            __('Monthly Price ID (Test)', 'wp-content-locker'),
             array($this, 'render_text_field'),
             'wp-content-locker',
             'wcl_pricing_section',
-            array('name' => 'wcl_monthly_price_id', 'placeholder' => 'price_xxx', 'class' => 'regular-text')
+            array('name' => 'wcl_monthly_price_id_test', 'placeholder' => 'price_xxx', 'class' => 'regular-text stripe-test-field')
+        );
+
+        // Monthly Price ID (Live)
+        register_setting('wcl_settings', 'wcl_monthly_price_id_live');
+        add_settings_field(
+            'wcl_monthly_price_id_live',
+            __('Monthly Price ID (Live)', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_pricing_section',
+            array('name' => 'wcl_monthly_price_id_live', 'placeholder' => 'price_xxx', 'class' => 'regular-text stripe-live-field')
         );
 
         // Monthly Display Price
@@ -184,15 +195,26 @@ class WCL_Admin {
             array('name' => 'wcl_promo_code', 'placeholder' => 'NEWUSER', 'class' => 'regular-text', 'description' => __('Auto-applied for monthly plan', 'wp-content-locker'))
         );
 
-        // Yearly Price ID
-        register_setting('wcl_settings', 'wcl_yearly_price_id');
+        // Yearly Price ID (Test)
+        register_setting('wcl_settings', 'wcl_yearly_price_id_test');
         add_settings_field(
-            'wcl_yearly_price_id',
-            __('Yearly Price ID', 'wp-content-locker'),
+            'wcl_yearly_price_id_test',
+            __('Yearly Price ID (Test)', 'wp-content-locker'),
             array($this, 'render_text_field'),
             'wp-content-locker',
             'wcl_pricing_section',
-            array('name' => 'wcl_yearly_price_id', 'placeholder' => 'price_xxx', 'class' => 'regular-text')
+            array('name' => 'wcl_yearly_price_id_test', 'placeholder' => 'price_xxx', 'class' => 'regular-text stripe-test-field')
+        );
+
+        // Yearly Price ID (Live)
+        register_setting('wcl_settings', 'wcl_yearly_price_id_live');
+        add_settings_field(
+            'wcl_yearly_price_id_live',
+            __('Yearly Price ID (Live)', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_pricing_section',
+            array('name' => 'wcl_yearly_price_id_live', 'placeholder' => 'price_xxx', 'class' => 'regular-text stripe-live-field')
         );
 
         // Yearly Original Price (for strikethrough)
@@ -332,12 +354,14 @@ class WCL_Admin {
 
         // Show current Stripe prices if available
         $stripe = WCL_Stripe::get_instance();
-        $monthly_price_id = get_option('wcl_monthly_price_id', '');
-        $yearly_price_id = get_option('wcl_yearly_price_id', '');
+        // Use the new helper methods to get the ID for the CURRENT mode
+        $monthly_price_id = $stripe->get_monthly_price_id();
+        $yearly_price_id = $stripe->get_yearly_price_id();
 
         if (!empty($monthly_price_id) || !empty($yearly_price_id)) {
+            $mode = get_option('wcl_stripe_mode', 'test');
             echo '<div style="background:#f0f6fc;border:1px solid #c3c4c7;padding:10px 15px;margin:10px 0;border-radius:4px;">';
-            echo '<strong>' . __('Current Stripe Prices:', 'wp-content-locker') . '</strong><br>';
+            echo '<strong>' . sprintf(__('Current Stripe Prices (%s mode):', 'wp-content-locker'), ucfirst($mode)) . '</strong><br>';
 
             if (!empty($monthly_price_id)) {
                 $monthly_formatted = $stripe->get_formatted_price($monthly_price_id);

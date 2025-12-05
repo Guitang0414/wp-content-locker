@@ -166,8 +166,8 @@ class WCL_Content {
 
         // Try to get prices from Stripe first, fall back to manual settings
         $stripe = WCL_Stripe::get_instance();
-        $monthly_price_id = get_option('wcl_monthly_price_id', '');
-        $yearly_price_id = get_option('wcl_yearly_price_id', '');
+        $monthly_price_id = $stripe->get_monthly_price_id();
+        $yearly_price_id = $stripe->get_yearly_price_id();
 
         // Get monthly price from Stripe or fallback
         $monthly_price = get_option('wcl_monthly_price', '9.99');

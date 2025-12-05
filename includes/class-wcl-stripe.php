@@ -52,6 +52,28 @@ class WCL_Stripe {
     }
 
     /**
+     * Get monthly price ID based on mode
+     */
+    public function get_monthly_price_id() {
+        $mode = get_option('wcl_stripe_mode', 'test');
+        if ($mode === 'live') {
+            return get_option('wcl_monthly_price_id_live', '');
+        }
+        return get_option('wcl_monthly_price_id_test', '');
+    }
+
+    /**
+     * Get yearly price ID based on mode
+     */
+    public function get_yearly_price_id() {
+        $mode = get_option('wcl_stripe_mode', 'test');
+        if ($mode === 'live') {
+            return get_option('wcl_yearly_price_id_live', '');
+        }
+        return get_option('wcl_yearly_price_id_test', '');
+    }
+
+    /**
      * Make API request to Stripe
      */
     private function api_request($endpoint, $method = 'GET', $data = array()) {

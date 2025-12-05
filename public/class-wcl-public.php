@@ -168,10 +168,12 @@ class WCL_Public {
 
         // Get price ID based on plan type
         $price_id = '';
+        $stripe = WCL_Stripe::get_instance();
+        
         if ($plan_type === 'yearly') {
-            $price_id = get_option('wcl_yearly_price_id', '');
+            $price_id = $stripe->get_yearly_price_id();
         } else {
-            $price_id = get_option('wcl_monthly_price_id', '');
+            $price_id = $stripe->get_monthly_price_id();
         }
 
         if (empty($price_id)) {
