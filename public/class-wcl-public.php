@@ -145,10 +145,13 @@ class WCL_Public {
             $email = ''; // Invalid email
         }
 
+        // Get current mode
+        $mode = WCL_Stripe::get_mode();
+
         // Check if logged-in user already has active subscription
         if (is_user_logged_in()) {
             $user_id = get_current_user_id();
-            if (WCL_Subscription::has_active_subscription($user_id)) {
+            if (WCL_Subscription::has_active_subscription($user_id, $mode)) {
                 wp_send_json_error(array('message' => __('You already have an active subscription.', 'wp-content-locker')));
             }
         }
@@ -158,7 +161,7 @@ class WCL_Public {
             $existing_user = get_user_by('email', $email);
             if ($existing_user) {
                 // User exists, check subscription status
-                $has_subscription = WCL_Subscription::has_active_subscription($existing_user->ID);
+                $has_subscription = WCL_Subscription::has_active_subscription($existing_user->ID, $mode);
                 if ($has_subscription) {
                     wp_send_json_error(array('message' => __('This email already has an active subscription. Please log in to access premium content.', 'wp-content-locker')));
                 }

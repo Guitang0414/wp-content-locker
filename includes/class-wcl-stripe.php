@@ -30,10 +30,22 @@ class WCL_Stripe {
     }
 
     /**
+     * Get current Stripe mode (test/live)
+     * Handles URL override for admins
+     */
+    public static function get_mode() {
+        // Check for URL override (Admin only)
+        if (isset($_GET['wcl_test_mode']) && $_GET['wcl_test_mode'] == '1' && current_user_can('manage_options')) {
+            return 'test';
+        }
+        return get_option('wcl_stripe_mode', 'test');
+    }
+
+    /**
      * Get the secret key based on mode
      */
     private function get_secret_key() {
-        $mode = get_option('wcl_stripe_mode', 'test');
+        $mode = self::get_mode();
         if ($mode === 'live') {
             return get_option('wcl_stripe_live_secret_key', '');
         }
@@ -44,7 +56,7 @@ class WCL_Stripe {
      * Get the publishable key based on mode
      */
     public function get_publishable_key() {
-        $mode = get_option('wcl_stripe_mode', 'test');
+        $mode = self::get_mode();
         if ($mode === 'live') {
             return get_option('wcl_stripe_live_publishable_key', '');
         }
@@ -55,7 +67,7 @@ class WCL_Stripe {
      * Get monthly price ID based on mode
      */
     public function get_monthly_price_id() {
-        $mode = get_option('wcl_stripe_mode', 'test');
+        $mode = self::get_mode();
         if ($mode === 'live') {
             return get_option('wcl_monthly_price_id_live', '');
         }
@@ -66,7 +78,7 @@ class WCL_Stripe {
      * Get yearly price ID based on mode
      */
     public function get_yearly_price_id() {
-        $mode = get_option('wcl_stripe_mode', 'test');
+        $mode = self::get_mode();
         if ($mode === 'live') {
             return get_option('wcl_yearly_price_id_live', '');
         }

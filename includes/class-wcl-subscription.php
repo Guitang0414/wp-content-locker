@@ -161,16 +161,22 @@ class WCL_Subscription {
     /**
      * Check if user has an active subscription
      */
-    public static function has_active_subscription($user_id) {
+    public static function has_active_subscription($user_id, $mode = null) {
         global $wpdb;
 
-        $count = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM " . self::get_table_name() . "
+        $sql = "SELECT COUNT(*) FROM " . self::get_table_name() . "
              WHERE user_id = %d
              AND status IN ('active', 'canceling')
-             AND (current_period_end IS NULL OR current_period_end > NOW())",
-            $user_id
-        ));
+             AND (current_period_end IS NULL OR current_period_end > NOW())";
+        
+        $params = array($user_id);
+
+        if ($mode) {
+            $sql .= " AND mode = %s";
+            $params[] = $mode;
+        }
+
+        $count = $wpdb->get_var($wpdb->prepare($sql, $params));
 
         return $count > 0;
     }
@@ -178,17 +184,24 @@ class WCL_Subscription {
     /**
      * Get active subscription for user
      */
-    public static function get_active_subscription($user_id) {
+    public static function get_active_subscription($user_id, $mode = null) {
         global $wpdb;
-        return $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM " . self::get_table_name() . "
+
+        $sql = "SELECT * FROM " . self::get_table_name() . "
              WHERE user_id = %d
              AND status IN ('active', 'canceling')
-             AND (current_period_end IS NULL OR current_period_end > NOW())
-             ORDER BY created_at DESC
-             LIMIT 1",
-            $user_id
-        ));
+             AND (current_period_end IS NULL OR current_period_end > NOW())";
+        
+        $params = array($user_id);
+
+        if ($mode) {
+            $sql .= " AND mode = %s";
+            $params[] = $mode;
+        }
+
+        $sql .= " ORDER BY created_at DESC LIMIT 1";
+
+        return $wpdb->get_row($wpdb->prepare($sql, $params));
     }
 
     /**

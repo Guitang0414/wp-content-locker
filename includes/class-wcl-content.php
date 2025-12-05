@@ -43,7 +43,11 @@ class WCL_Content {
         // Logged in users with active subscription can access
         if (is_user_logged_in()) {
             $user_id = get_current_user_id();
-            return WCL_Subscription::has_active_subscription($user_id);
+            // Check if user has active subscription
+            $mode = WCL_Stripe::get_mode();
+            if (WCL_Subscription::has_active_subscription($user_id, $mode)) {
+                return true;
+            }
         }
         return false;
     }
