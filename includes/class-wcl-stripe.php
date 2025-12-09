@@ -521,7 +521,7 @@ class WCL_Stripe {
             'stripe_customer_id' => $customer_id,
             'stripe_subscription_id' => $subscription_id,
             'plan_type' => $plan_type,
-            'mode' => get_option('wcl_stripe_mode', 'test'),
+            'mode' => (isset($session['livemode']) && $session['livemode']) ? 'live' : 'test',
             'status' => 'active',
             'current_period_start' => $period_start,
             'current_period_end' => $period_end,

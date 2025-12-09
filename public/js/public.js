@@ -9,7 +9,6 @@
         selectedPlan: 'monthly',
 
         init: function () {
-            console.log('WCL JS Loaded. Version: ClientSideCheckAdded_v2');
             this.bindEvents();
             this.checkSuccessMessage();
         },
