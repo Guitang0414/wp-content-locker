@@ -77,7 +77,7 @@ class WCL_Public {
             WCL_PLUGIN_URL . 'public/js/public.js',
             array('jquery'),
             WCL_VERSION . '.' . time(),
-            true
+            false // Load in header
         );
 
         // Check for test mode override
@@ -117,8 +117,13 @@ class WCL_Public {
             WCL_PLUGIN_URL . 'public/js/public.js',
             array('jquery'),
             WCL_VERSION . '.' . time(),
-            true
+            false // Load in header to ensure it runs
         );
+
+        // Debug footer
+        add_action('wp_footer', function() {
+            echo '<script>console.log("WCL Footer Hook Fired");</script>';
+        }, 999);
 
         // Check for test mode override
         $is_test_mode = false;
