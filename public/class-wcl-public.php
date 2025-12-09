@@ -260,7 +260,13 @@ class WCL_Public {
         $checkout_url = $session['url'];
 
         wp_send_json_success(array(
-            'checkout_url' => $checkout_url,
+            'checkout_url' => $session['url'],
+            'debug' => array(
+                'post_test_mode' => isset($_POST['test_mode']) ? $_POST['test_mode'] : 'not set',
+                'stripe_mode' => WCL_Stripe::get_mode(),
+                'price_id' => $price_id,
+                'is_test_mode_param' => isset($_GET['wcl_test_mode']) ? $_GET['wcl_test_mode'] : 'not set'
+            )
         ));
     }
 
