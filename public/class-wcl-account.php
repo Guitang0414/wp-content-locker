@@ -19,6 +19,8 @@ class WCL_Account {
         add_action('wp_ajax_wcl_cancel_subscription', array($this, 'ajax_cancel_subscription'));
         add_action('wp_ajax_wcl_login', array($this, 'ajax_login'));
         add_action('wp_ajax_nopriv_wcl_login', array($this, 'ajax_login'));
+        add_action('wp_ajax_wcl_update_profile', array($this, 'ajax_update_profile'));
+        add_action('wp_ajax_wcl_change_password', array($this, 'ajax_change_password'));
     }
 
     /**
@@ -47,7 +49,9 @@ class WCL_Account {
                 'confirmCancel' => __('Are you sure you want to cancel your subscription? You will still have access until the end of your billing period.', 'wp-content-locker'),
                 'canceling' => __('Canceling...', 'wp-content-locker'),
                 'loggingIn' => __('Logging in...', 'wp-content-locker'),
+                'saving' => __('Saving...', 'wp-content-locker'),
                 'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
+                'passwordMismatch' => __('Passwords do not match.', 'wp-content-locker'),
             ),
         ));
     }
@@ -99,6 +103,90 @@ class WCL_Account {
     }
 
     /**
+     * AJAX handler for update profile
+     */
+    public function ajax_update_profile() {
+        if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        if (!is_user_logged_in()) {
+            wp_send_json_error(array('message' => __('You must be logged in.', 'wp-content-locker')));
+        }
+
+        $user_id = get_current_user_id();
+        $first_name = isset($_POST['first_name']) ? sanitize_text_field($_POST['first_name']) : '';
+        $last_name = isset($_POST['last_name']) ? sanitize_text_field($_POST['last_name']) : '';
+        $display_name = trim($first_name . ' ' . $last_name);
+
+        $user_data = array(
+            'ID' => $user_id,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+        );
+
+        if (!empty($display_name)) {
+            $user_data['display_name'] = $display_name;
+        }
+
+        $result = wp_update_user($user_data);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
+        }
+
+        wp_send_json_success(array('message' => __('Profile updated successfully.', 'wp-content-locker')));
+    }
+
+    /**
+     * AJAX handler for change password
+     */
+    public function ajax_change_password() {
+        if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        if (!is_user_logged_in()) {
+            wp_send_json_error(array('message' => __('You must be logged in.', 'wp-content-locker')));
+        }
+
+        $user_id = get_current_user_id();
+        $current_password = isset($_POST['current_password']) ? $_POST['current_password'] : '';
+        $new_password = isset($_POST['new_password']) ? $_POST['new_password'] : '';
+        $confirm_password = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
+
+        if (empty($current_password) || empty($new_password)) {
+            wp_send_json_error(array('message' => __('Please fill in all fields.', 'wp-content-locker')));
+        }
+
+        // Validate password length
+        if (strlen($new_password) < 8) {
+            wp_send_json_error(array('message' => __('Password must be at least 8 characters.', 'wp-content-locker')));
+        }
+
+        if ($new_password !== $confirm_password) {
+            wp_send_json_error(array('message' => __('New passwords do not match.', 'wp-content-locker')));
+        }
+
+        $user = get_user_by('id', $user_id);
+        // Note: Passwords are not sanitized to preserve special characters
+        if (!wp_check_password($current_password, $user->user_pass, $user_id)) {
+            wp_send_json_error(array('message' => __('Current password is incorrect.', 'wp-content-locker')));
+        }
+
+        wp_set_password($new_password, $user_id);
+
+        // Re-login user
+        wp_signon(array(
+            'user_login' => $user->user_login,
+            'user_password' => $new_password,
+            'remember' => true,
+        ));
+
+        wp_send_json_success(array('message' => __('Password changed successfully.', 'wp-content-locker')));
+    }
+
+    /**
      * AJAX handler for cancel subscription
      */
     public function ajax_cancel_subscription() {
@@ -137,6 +225,13 @@ class WCL_Account {
      * Get subscription data for display
      */
     public static function get_subscription_display_data($user_id) {
+        // Check cache first
+        $cache_key = 'wcl_sub_display_' . $user_id;
+        $cached = get_transient($cache_key);
+        if ($cached !== false) {
+            return $cached;
+        }
+
         $subscription = WCL_Subscription::get_active_subscription($user_id);
 
         if (!$subscription) {
@@ -167,7 +262,38 @@ class WCL_Account {
             'past_due' => '#ef4444',
         );
 
-        return array(
+        // Get additional details from Stripe
+        $stripe = WCL_Stripe::get_instance();
+        $stripe_sub = $stripe->get_subscription($subscription->stripe_subscription_id);
+        
+        $payment_method_info = 'N/A';
+        $invoices = array();
+
+        if (!is_wp_error($stripe_sub)) {
+            // Get Payment Method
+            if (isset($stripe_sub['default_payment_method']) && !empty($stripe_sub['default_payment_method'])) {
+                $pm = $stripe->get_payment_method($stripe_sub['default_payment_method']);
+                if (!is_wp_error($pm) && isset($pm['card'])) {
+                    $payment_method_info = strtoupper($pm['card']['brand']) . ' •••• ' . $pm['card']['last4'];
+                }
+            }
+
+            // Get Invoices
+            $customer_id = $subscription->stripe_customer_id;
+            $invoices_data = $stripe->get_invoices($customer_id, 10);
+            if (!is_wp_error($invoices_data) && isset($invoices_data['data'])) {
+                foreach ($invoices_data['data'] as $invoice) {
+                    $invoices[] = array(
+                        'date' => date_i18n(get_option('date_format'), $invoice['created']),
+                        'amount' => strtoupper($invoice['currency']) . ' ' . number_format($invoice['amount_paid'] / 100, 2),
+                        'status' => ucfirst($invoice['status']),
+                        'pdf' => $invoice['invoice_pdf'],
+                    );
+                }
+            }
+        }
+
+        $data = array(
             'id' => $subscription->id,
             'plan_type' => $subscription->plan_type,
             'plan_label' => isset($plan_labels[$subscription->plan_type]) ? $plan_labels[$subscription->plan_type] : $subscription->plan_type,
@@ -177,6 +303,13 @@ class WCL_Account {
             'current_period_end' => $subscription->current_period_end,
             'current_period_end_formatted' => $subscription->current_period_end ? date_i18n(get_option('date_format'), strtotime($subscription->current_period_end)) : '',
             'can_cancel' => in_array($subscription->status, array('active')),
+            'payment_method' => $payment_method_info,
+            'invoices' => $invoices,
         );
+
+        // Cache for 5 minutes
+        set_transient($cache_key, $data, 5 * MINUTE_IN_SECONDS);
+
+        return $data;
     }
 }

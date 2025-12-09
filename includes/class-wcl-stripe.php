@@ -86,6 +86,24 @@ class WCL_Stripe {
     }
 
     /**
+     * Get customer invoices
+     */
+    public function get_invoices($customer_id, $limit = 10) {
+        return $this->api_request('/invoices', 'GET', array(
+            'customer' => $customer_id,
+            'limit' => $limit,
+            'status' => 'paid',
+        ));
+    }
+
+    /**
+     * Get payment method details
+     */
+    public function get_payment_method($payment_method_id) {
+        return $this->api_request('/payment_methods/' . $payment_method_id);
+    }
+
+    /**
      * Make API request to Stripe
      */
     private function api_request($endpoint, $method = 'GET', $data = array()) {
@@ -218,7 +236,6 @@ class WCL_Stripe {
             'line_items[0][price]' => $price_id,
             'line_items[0][quantity]' => 1,
             'success_url' => $success_url,
-            'cancel_url' => $cancel_url,
             'cancel_url' => $cancel_url,
             'allow_promotion_codes' => 'true',
         );
@@ -425,12 +442,14 @@ class WCL_Stripe {
         $post_id = isset($metadata['post_id']) ? $metadata['post_id'] : 0;
 
         // Create or get WordPress user
-        $user_id = WCL_User::get_or_create_user($customer_email);
+        $user_result = WCL_User::get_or_create_user($customer_email);
 
-        if (is_wp_error($user_id)) {
-            error_log('WCL: Failed to create user - ' . $user_id->get_error_message());
+        if (is_wp_error($user_result)) {
+            error_log('WCL: Failed to create user - ' . $user_result->get_error_message());
             return;
         }
+
+        $user_id = is_array($user_result) ? $user_result['user_id'] : $user_result;
 
         // Get subscription details
         $subscription = null;
@@ -442,12 +461,19 @@ class WCL_Stripe {
         $plan_type = 'monthly';
         $period_start = null;
         $period_end = null;
+        $amount_formatted = '';
+        $plan_name = '';
 
         if ($subscription && !is_wp_error($subscription)) {
             // Determine plan type from interval
             if (isset($subscription['items']['data'][0]['price']['recurring']['interval'])) {
                 $interval = $subscription['items']['data'][0]['price']['recurring']['interval'];
                 $plan_type = ($interval === 'year') ? 'yearly' : 'monthly';
+                
+                // Get price details for email
+                $price_id = $subscription['items']['data'][0]['price']['id'];
+                $amount_formatted = $this->get_formatted_price($price_id);
+                $plan_name = ($interval === 'year') ? __('Yearly Subscription', 'wp-content-locker') : __('Monthly Subscription', 'wp-content-locker');
             }
 
             $period_start = isset($subscription['current_period_start'])
@@ -473,6 +499,17 @@ class WCL_Stripe {
         // Update user meta
         update_user_meta($user_id, '_wcl_stripe_customer_id', $customer_id);
         update_user_meta($user_id, '_wcl_subscription_status', 'active');
+
+        // Send subscription email
+        $email_data = array(
+            'user_id' => $user_id,
+            'password' => is_array($user_result) ? $user_result['password'] : null,
+            'new_user' => is_array($user_result) ? $user_result['new_user'] : false,
+            'plan_name' => $plan_name,
+            'amount' => $amount_formatted,
+            'post_url' => $post_id ? get_permalink($post_id) : home_url()
+        );
+        WCL_User::send_subscription_email($email_data);
     }
 
     /**

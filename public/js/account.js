@@ -1,90 +1,124 @@
-/**
- * WP Content Locker - Account Page JavaScript
- */
+jQuery(document).ready(function($) {
+    // Tab Switching
+    $('.wcl-nav-item').click(function() {
+        var tab = $(this).data('tab');
+        
+        $('.wcl-nav-item').removeClass('active');
+        $(this).addClass('active');
+        
+        $('.wcl-tab-content').removeClass('active');
+        $('#wcl-tab-' + tab).addClass('active');
+    });
 
-(function($) {
-    'use strict';
+    // Profile Update
+    $('#wcl-profile-form').submit(function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var btn = form.find('button');
+        var msg = form.siblings('.wcl-message');
+        
+        btn.prop('disabled', true).text(wclAccount.strings.saving);
+        msg.hide().removeClass('success error');
 
-    $(document).ready(function() {
-        // Login form handler
-        $('.wcl-login-form').on('submit', function(e) {
-            e.preventDefault();
-
-            var $form = $(this);
-            var $btn = $form.find('.wcl-login-btn');
-            var $error = $form.find('.wcl-login-error');
-            var originalText = $btn.text();
-
-            // Get form data
-            var username = $form.find('#wcl_username').val();
-            var password = $form.find('#wcl_password').val();
-            var remember = $form.find('input[name="remember"]').is(':checked');
-
-            // Disable button and show loading
-            $btn.prop('disabled', true).text(wclAccount.strings.loggingIn);
-            $error.hide();
-
-            $.ajax({
-                url: wclAccount.ajaxUrl,
-                type: 'POST',
-                data: {
-                    action: 'wcl_login',
-                    nonce: wclAccount.nonce,
-                    username: username,
-                    password: password,
-                    remember: remember ? 'true' : 'false'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Reload page on success
-                        window.location.reload();
-                    } else {
-                        $error.text(response.data.message).show();
-                        $btn.prop('disabled', false).text(originalText);
-                    }
-                },
-                error: function() {
-                    $error.text(wclAccount.strings.error).show();
-                    $btn.prop('disabled', false).text(originalText);
-                }
-            });
-        });
-
-        // Cancel subscription handler
-        $('.wcl-cancel-subscription-btn').on('click', function() {
-            var $btn = $(this);
-            var originalText = $btn.text();
-
-            // Confirm cancellation
-            if (!confirm(wclAccount.strings.confirmCancel)) {
-                return;
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_update_profile',
+            nonce: wclAccount.nonce,
+            first_name: form.find('input[name="first_name"]').val(),
+            last_name: form.find('input[name="last_name"]').val()
+        }, function(response) {
+            btn.prop('disabled', false).text('Save Changes');
+            if (response.success) {
+                msg.addClass('success').text(response.data.message).show();
+                // Update sidebar name
+                $('.wcl-user-name').text(form.find('input[name="first_name"]').val() + ' ' + form.find('input[name="last_name"]').val());
+            } else {
+                msg.addClass('error').text(response.data.message).show();
             }
-
-            // Disable button and show loading
-            $btn.prop('disabled', true).text(wclAccount.strings.canceling);
-
-            $.ajax({
-                url: wclAccount.ajaxUrl,
-                type: 'POST',
-                data: {
-                    action: 'wcl_cancel_subscription',
-                    nonce: wclAccount.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Reload page to show updated status
-                        window.location.href = window.location.pathname + '?wcl_canceled=1';
-                    } else {
-                        alert(response.data.message);
-                        $btn.prop('disabled', false).text(originalText);
-                    }
-                },
-                error: function() {
-                    alert(wclAccount.strings.error);
-                    $btn.prop('disabled', false).text(originalText);
-                }
-            });
         });
     });
 
-})(jQuery);
+    // Password Change
+    $('#wcl-password-form').submit(function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var btn = form.find('button');
+        var msg = form.siblings('.wcl-message');
+        
+        var newPass = form.find('input[name="new_password"]').val();
+        var confirmPass = form.find('input[name="confirm_password"]').val();
+
+        if (newPass !== confirmPass) {
+            msg.addClass('error').text(wclAccount.strings.passwordMismatch).show();
+            return;
+        }
+        
+        btn.prop('disabled', true).text(wclAccount.strings.saving);
+        msg.hide().removeClass('success error');
+
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_change_password',
+            nonce: wclAccount.nonce,
+            current_password: form.find('input[name="current_password"]').val(),
+            new_password: newPass,
+            confirm_password: confirmPass
+        }, function(response) {
+            btn.prop('disabled', false).text('Update Password');
+            if (response.success) {
+                msg.addClass('success').text(response.data.message).show();
+                form[0].reset();
+            } else {
+                msg.addClass('error').text(response.data.message).show();
+            }
+        });
+    });
+
+    // Login Form
+    $('.wcl-login-form').submit(function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var btn = form.find('button');
+        var msg = form.siblings('.wcl-message');
+        
+        btn.prop('disabled', true).text(wclAccount.strings.loggingIn);
+        msg.hide().removeClass('success error');
+
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_login',
+            nonce: wclAccount.nonce,
+            username: form.find('input[name="username"]').val(),
+            password: form.find('input[name="password"]').val(),
+            remember: form.find('input[name="remember"]').is(':checked')
+        }, function(response) {
+            if (response.success) {
+                location.reload();
+            } else {
+                btn.prop('disabled', false).text('Login');
+                msg.addClass('error').text(response.data.message).show();
+            }
+        });
+    });
+
+    // Cancel Subscription
+    $('.wcl-cancel-subscription-btn').click(function() {
+        if (!confirm(wclAccount.strings.confirmCancel)) {
+            return;
+        }
+
+        var btn = $(this);
+        var originalText = btn.text();
+        btn.prop('disabled', true).text(wclAccount.strings.canceling);
+
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_cancel_subscription',
+            nonce: wclAccount.nonce
+        }, function(response) {
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert(response.data.message);
+                btn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+});
