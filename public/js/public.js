@@ -2,48 +2,48 @@
  * WP Content Locker Public Scripts - WSJ/WaPo Style
  */
 
-(function($) {
+(function ($) {
     'use strict';
 
     var WCLPaywall = {
         selectedPlan: 'monthly',
 
-        init: function() {
+        init: function () {
             this.bindEvents();
             this.checkSuccessMessage();
         },
 
-        bindEvents: function() {
+        bindEvents: function () {
             var self = this;
 
             // Open modal button (Step 1 -> Step 2)
-            $(document).on('click', '.wcl-open-modal-btn', function(e) {
+            $(document).on('click', '.wcl-open-modal-btn', function (e) {
                 e.preventDefault();
                 self.openModal();
             });
 
             // Close modal
-            $(document).on('click', '.wcl-modal-close', function(e) {
+            $(document).on('click', '.wcl-modal-close', function (e) {
                 e.preventDefault();
                 self.closeModal();
             });
 
             // Close modal on overlay click
-            $(document).on('click', '.wcl-modal-overlay', function(e) {
+            $(document).on('click', '.wcl-modal-overlay', function (e) {
                 if ($(e.target).hasClass('wcl-modal-overlay')) {
                     self.closeModal();
                 }
             });
 
             // Close modal on ESC key
-            $(document).on('keydown', function(e) {
+            $(document).on('keydown', function (e) {
                 if (e.key === 'Escape') {
                     self.closeModal();
                 }
             });
 
             // Plan selection in modal
-            $(document).on('click', '.wcl-plan-card', function() {
+            $(document).on('click', '.wcl-plan-card', function () {
                 var $card = $(this);
                 var plan = $card.data('plan');
 
@@ -54,13 +54,13 @@
             });
 
             // Checkout button in modal
-            $(document).on('click', '.wcl-checkout-btn', function(e) {
+            $(document).on('click', '.wcl-checkout-btn', function (e) {
                 e.preventDefault();
                 self.handleCheckout();
             });
 
             // Email input enter key
-            $(document).on('keypress', '#wcl-checkout-email', function(e) {
+            $(document).on('keypress', '#wcl-checkout-email', function (e) {
                 if (e.which === 13) {
                     e.preventDefault();
                     self.handleCheckout();
@@ -68,18 +68,18 @@
             });
         },
 
-        openModal: function() {
+        openModal: function () {
             $('.wcl-modal-overlay').fadeIn(200);
             $('body').css('overflow', 'hidden');
         },
 
-        closeModal: function() {
+        closeModal: function () {
             $('.wcl-modal-overlay').fadeOut(200);
             $('body').css('overflow', '');
             this.hideError();
         },
 
-        handleCheckout: function() {
+        handleCheckout: function () {
             var self = this;
             var $btn = $('.wcl-checkout-btn');
             var email = '';
@@ -106,9 +106,10 @@
                     nonce: wclData.nonce,
                     plan_type: self.selectedPlan,
                     post_id: wclData.postId,
-                    email: email
+                    email: email,
+                    test_mode: wclData.isTestMode ? 1 : 0
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.success && response.data.checkout_url) {
                         // Redirect to Stripe Checkout
                         window.location.href = response.data.checkout_url;
@@ -120,30 +121,30 @@
                         $btn.prop('disabled', false).removeClass('loading');
                     }
                 },
-                error: function() {
+                error: function () {
                     self.showError(wclData.strings.error);
                     $btn.prop('disabled', false).removeClass('loading');
                 }
             });
         },
 
-        isValidEmail: function(email) {
+        isValidEmail: function (email) {
             var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return re.test(email);
         },
 
-        showError: function(message) {
+        showError: function (message) {
             var $error = $('.wcl-modal-error');
             if ($error.length) {
                 $error.text(message).show();
             }
         },
 
-        hideError: function() {
+        hideError: function () {
             $('.wcl-modal-error').hide();
         },
 
-        checkSuccessMessage: function() {
+        checkSuccessMessage: function () {
             // Check URL for success parameter
             var urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('wcl_subscribed') === '1') {
@@ -167,7 +168,7 @@
     };
 
     // Initialize on DOM ready
-    $(document).ready(function() {
+    $(document).ready(function () {
         WCLPaywall.init();
     });
 

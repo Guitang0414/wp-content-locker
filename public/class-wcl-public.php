@@ -80,12 +80,19 @@ class WCL_Public {
             true
         );
 
+        // Check for test mode override
+        $is_test_mode = false;
+        if (isset($_GET['wcl_test_mode']) && $_GET['wcl_test_mode'] == '1' && current_user_can('manage_options')) {
+            $is_test_mode = true;
+        }
+
         // Localize script with necessary data
         wp_localize_script('wcl-public', 'wclData', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wcl_checkout_nonce'),
             'postId' => get_the_ID(),
             'isLoggedIn' => is_user_logged_in(),
+            'isTestMode' => $is_test_mode,
             'strings' => array(
                 'processing' => __('Processing...', 'wp-content-locker'),
                 'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
@@ -113,12 +120,19 @@ class WCL_Public {
             true
         );
 
+        // Check for test mode override
+        $is_test_mode = false;
+        if (isset($_GET['wcl_test_mode']) && $_GET['wcl_test_mode'] == '1' && current_user_can('manage_options')) {
+            $is_test_mode = true;
+        }
+
         // Localize script with necessary data
         wp_localize_script('wcl-public', 'wclData', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wcl_checkout_nonce'),
             'postId' => get_the_ID(),
             'isLoggedIn' => is_user_logged_in(),
+            'isTestMode' => $is_test_mode,
             'strings' => array(
                 'processing' => __('Processing...', 'wp-content-locker'),
                 'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
@@ -147,6 +161,12 @@ class WCL_Public {
 
         // Get current mode
         $mode = WCL_Stripe::get_mode();
+
+        // Check for test mode override from AJAX
+        if (isset($_POST['test_mode']) && $_POST['test_mode'] == '1' && current_user_can('manage_options')) {
+            $mode = 'test';
+            WCL_Stripe::set_mode('test');
+        }
 
         // Check if logged-in user already has active subscription
         if (is_user_logged_in()) {
