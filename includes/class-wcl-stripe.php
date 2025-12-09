@@ -53,8 +53,9 @@ class WCL_Stripe {
             return self::$current_mode;
         }
 
-        // Check for URL override (Admin only)
-        if (isset($_GET['wcl_test_mode']) && $_GET['wcl_test_mode'] == '1' && current_user_can('manage_options')) {
+        // Check for URL override (Admin or Secret Key)
+        // Secret key allows testing in incognito/guest mode
+        if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_user_can('manage_options') || $_GET['wcl_test_mode'] === 'wcl_test_secret')) {
             return 'test';
         }
         return get_option('wcl_stripe_mode', 'test');
