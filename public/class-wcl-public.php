@@ -71,34 +71,8 @@ class WCL_Public {
             return;
         }
 
-        // Always load scripts on posts, the paywall template will be there if needed
-        wp_enqueue_script(
-            'wcl-public',
-            WCL_PLUGIN_URL . 'public/js/public.js',
-            array('jquery'),
-            WCL_VERSION . '.' . time(),
-            false // Load in header
-        );
-
-        // Check for test mode override
-        $is_test_mode = false;
-        if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_user_can('manage_options') || $_GET['wcl_test_mode'] === 'wcl_test_secret')) {
-            $is_test_mode = true;
-        }
-
-        // Localize script with necessary data
-        wp_localize_script('wcl-public', 'wclData', array(
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('wcl_checkout_nonce'),
-            'postId' => get_the_ID(),
-            'isLoggedIn' => is_user_logged_in(),
-            'isTestMode' => $is_test_mode,
-            'strings' => array(
-                'processing' => __('Processing...', 'wp-content-locker'),
-                'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
-                'invalidEmail' => __('Please enter a valid email address.', 'wp-content-locker'),
-            ),
-        ));
+        // Use the shared inline method
+        $this->enqueue_paywall_scripts();
     }
 
     /**
@@ -112,18 +86,17 @@ class WCL_Public {
         }
         $loaded = true;
 
-        wp_enqueue_script(
-            'wcl-public',
-            WCL_PLUGIN_URL . 'public/js/public.js',
-            array('jquery'),
-            WCL_VERSION . '.' . time(),
-            false // Load in header to ensure it runs
-        );
+        // Add to footer
+        add_action('wp_footer', array($this, 'output_inline_js'), 100);
+    }
 
-        // Debug footer
-        add_action('wp_footer', function() {
-            echo '<script>console.log("WCL Footer Hook Fired");</script>';
-        }, 999);
+    /**
+     * Output inline JS
+     */
+    public function output_inline_js() {
+        static $printed = false;
+        if ($printed) return;
+        $printed = true;
 
         // Check for test mode override
         $is_test_mode = false;
@@ -131,8 +104,7 @@ class WCL_Public {
             $is_test_mode = true;
         }
 
-        // Localize script with necessary data
-        wp_localize_script('wcl-public', 'wclData', array(
+        $data = array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wcl_checkout_nonce'),
             'postId' => get_the_ID(),
@@ -143,7 +115,18 @@ class WCL_Public {
                 'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
                 'invalidEmail' => __('Please enter a valid email address.', 'wp-content-locker'),
             ),
-        ));
+        );
+
+        echo '<script type="text/javascript">
+        var wclData = ' . json_encode($data) . ';
+        </script>';
+
+        echo '<script type="text/javascript">';
+        include WCL_PLUGIN_DIR . 'public/js/public.js';
+        echo '</script>';
+        
+        // Debug
+        echo '<script>console.log("WCL Inline JS Output Complete");</script>';
     }
 
     /**
