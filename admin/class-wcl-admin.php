@@ -99,15 +99,26 @@ class WCL_Admin {
             array('name' => 'wcl_stripe_live_secret_key', 'type' => 'password', 'class' => 'stripe-live-field regular-text')
         );
 
-        // Webhook Secret
+        // Webhook Secret (Live)
         register_setting('wcl_settings', 'wcl_stripe_webhook_secret');
         add_settings_field(
             'wcl_stripe_webhook_secret',
-            __('Webhook Secret', 'wp-content-locker'),
+            __('Webhook Secret (Live)', 'wp-content-locker'),
             array($this, 'render_text_field'),
             'wp-content-locker',
             'wcl_stripe_section',
-            array('name' => 'wcl_stripe_webhook_secret', 'type' => 'password', 'class' => 'regular-text')
+            array('name' => 'wcl_stripe_webhook_secret', 'type' => 'password', 'class' => 'regular-text stripe-live-field')
+        );
+
+        // Webhook Secret (Test)
+        register_setting('wcl_settings', 'wcl_stripe_test_webhook_secret');
+        add_settings_field(
+            'wcl_stripe_test_webhook_secret',
+            __('Webhook Secret (Test)', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_stripe_section',
+            array('name' => 'wcl_stripe_test_webhook_secret', 'type' => 'password', 'class' => 'regular-text stripe-test-field')
         );
 
         // Price IDs Section

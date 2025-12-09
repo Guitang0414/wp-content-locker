@@ -339,13 +339,24 @@ class WCL_Stripe {
         $payload = $request->get_body();
         $sig_header = $request->get_header('stripe-signature');
         $webhook_secret = get_option('wcl_stripe_webhook_secret', '');
+        $test_webhook_secret = get_option('wcl_stripe_test_webhook_secret', '');
 
-        // Verify webhook signature if secret is configured
+        // Verify webhook signature
+        $verified = false;
+
+        // Try primary (Live) secret
         if (!empty($webhook_secret)) {
             $verified = $this->verify_webhook_signature($payload, $sig_header, $webhook_secret);
-            if (!$verified) {
-                return new WP_REST_Response(array('error' => 'Invalid signature'), 400);
-            }
+        }
+
+        // If not verified, try Test secret
+        if (!$verified && !empty($test_webhook_secret)) {
+            $verified = $this->verify_webhook_signature($payload, $sig_header, $test_webhook_secret);
+            // If verified with test secret, ensure we treat this as a test event if needed
+        }
+
+        if (!$verified && (!empty($webhook_secret) || !empty($test_webhook_secret))) {
+             return new WP_REST_Response(array('error' => 'Invalid signature'), 400);
         }
 
         $event = json_decode($payload, true);
