@@ -253,12 +253,18 @@ stripe listen --forward-to http://localhost/wp-json/wp-content-locker/v1/webhook
 
 为了方便管理员在生产环境（Live Mode）下测试支付流程，插件提供了一个隐藏的 URL 参数触发器。
 
-### 如何使用
-
+### 1. 管理员测试
 1.  确保你已登录 **管理员账号**。
 2.  在任何文章 URL 后面加上 `?wcl_test_mode=1`。
     - 正常链接：`https://yoursite.com/my-post/` -> **Live Mode**
     - 测试链接：`https://yoursite.com/my-post/?wcl_test_mode=1` -> **Test Mode**
+
+### 2. 访客/普通用户测试
+如果你需要测试未登录用户的购买流程（Guest Checkout），可以使用**秘密密钥**：
+
+1.  在文章 URL 后面加上 `?wcl_test_mode=wcl_test_secret`。
+    - 测试链接：`https://yoursite.com/my-post/?wcl_test_mode=wcl_test_secret`
+2.  这会强制开启 Test Mode，即使你没有登录管理员账号。
 
 ### 效果
 
@@ -269,7 +275,8 @@ stripe listen --forward-to http://localhost/wp-json/wp-content-locker/v1/webhook
 
 ### 安全性
 
-- **仅限管理员**：普通用户即使添加了该参数，也只会看到 Live Mode。
+- **仅限管理员**：`?wcl_test_mode=1` 仅对管理员生效。
+- **秘密密钥**：`wcl_test_secret` 允许任何人（包括访客）进入测试模式，请勿泄露给真实用户。
 - **互不干扰**：你的测试操作不会影响真实用户的订阅状态。
 
 ---
