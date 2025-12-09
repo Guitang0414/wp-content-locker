@@ -257,7 +257,19 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
                 }
             }
 
-            console.log('WCL: Sending AJAX request with email =', email, 'plan =', selectedPlan);
+            // Determine test mode
+            var isTestMode = false;
+            if (typeof wclData.isTestMode !== 'undefined') {
+                isTestMode = wclData.isTestMode === true || wclData.isTestMode === 'true';
+            }
+            
+            // Allow URL override
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('wcl_test_mode') === 'wcl_test_secret') {
+                isTestMode = true;
+            }
+
+            console.log('WCL: Sending AJAX request with email =', email, 'plan =', selectedPlan, 'test_mode =', isTestMode);
             $btn.prop('disabled', true).addClass('loading');
             $('.wcl-modal-error').hide();
 
@@ -269,7 +281,8 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
                     nonce: wclData.nonce,
                     plan_type: selectedPlan,
                     post_id: wclData.postId,
-                    email: email
+                    email: email,
+                    test_mode: isTestMode ? 1 : 0
                 },
                 success: function(response) {
                     console.log('WCL: AJAX response =', response);
