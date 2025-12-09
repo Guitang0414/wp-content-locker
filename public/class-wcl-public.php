@@ -124,9 +124,6 @@ class WCL_Public {
         echo '<script type="text/javascript">';
         include WCL_PLUGIN_DIR . 'public/js/public.js';
         echo '</script>';
-        
-        // Debug
-        echo '<script>console.log("WCL Inline JS Output Complete");</script>';
     }
 
     /**

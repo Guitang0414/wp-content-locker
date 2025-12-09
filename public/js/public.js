@@ -9,7 +9,6 @@
         selectedPlan: 'monthly',
 
         init: function () {
-            console.log('WCL Init. Test Mode:', wclData.isTestMode);
             this.bindEvents();
             this.checkSuccessMessage();
         },
