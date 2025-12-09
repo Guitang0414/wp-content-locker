@@ -395,6 +395,13 @@ class WCL_Public {
             return;
         }
 
+        // Detect mode from session ID
+        if (strpos($session_id, 'cs_test_') === 0) {
+            WCL_Stripe::set_mode('test');
+        } else {
+            WCL_Stripe::set_mode('live');
+        }
+
         // Get checkout session
         $stripe = WCL_Stripe::get_instance();
         $session = $stripe->get_checkout_session($session_id, array('customer', 'subscription'));
