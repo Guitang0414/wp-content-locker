@@ -125,6 +125,10 @@ class WCL_Account {
             'last_name' => $last_name,
         );
 
+        // Explicitly update user meta
+        update_user_meta($user_id, 'first_name', $first_name);
+        update_user_meta($user_id, 'last_name', $last_name);
+
         if (!empty($display_name)) {
             $user_data['display_name'] = $display_name;
         }
@@ -264,6 +268,12 @@ class WCL_Account {
 
         // Get additional details from Stripe
         $stripe = WCL_Stripe::get_instance();
+        
+        // Set mode based on subscription if available
+        if (isset($subscription->mode)) {
+            $stripe->set_mode($subscription->mode);
+        }
+
         $stripe_sub = $stripe->get_subscription($subscription->stripe_subscription_id);
         
         $payment_method_info = 'N/A';

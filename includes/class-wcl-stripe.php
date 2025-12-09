@@ -20,6 +20,11 @@ class WCL_Stripe {
     private $api_base = 'https://api.stripe.com/v1';
 
     /**
+     * Current mode override
+     */
+    private static $current_mode = null;
+
+    /**
      * Get single instance
      */
     public static function get_instance() {
@@ -30,10 +35,24 @@ class WCL_Stripe {
     }
 
     /**
+     * Set mode for this instance
+     */
+    public static function set_mode($mode) {
+        if (in_array($mode, array('live', 'test'))) {
+            self::$current_mode = $mode;
+        }
+    }
+
+    /**
      * Get current Stripe mode (test/live)
      * Handles URL override for admins
      */
     public static function get_mode() {
+        // Check for static override
+        if (self::$current_mode) {
+            return self::$current_mode;
+        }
+
         // Check for URL override (Admin only)
         if (isset($_GET['wcl_test_mode']) && $_GET['wcl_test_mode'] == '1' && current_user_can('manage_options')) {
             return 'test';
