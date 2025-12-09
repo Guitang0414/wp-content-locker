@@ -116,7 +116,7 @@ class WCL_Public {
             'wcl-public',
             WCL_PLUGIN_URL . 'public/js/public.js',
             array('jquery'),
-            WCL_VERSION,
+            WCL_VERSION . '.' . time(),
             true
         );
 
