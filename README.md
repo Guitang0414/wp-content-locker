@@ -10,8 +10,9 @@ WP Content Locker 是一个 WordPress 订阅付费墙插件，让你可以将文
 4. [插件设置](#插件设置)
 5. [启用文章付费墙](#启用文章付费墙)
 6. [测试订阅流程](#测试订阅流程)
-7. [上线生产环境](#上线生产环境)
-8. [常见问题](#常见问题)
+7. [高级功能：URL 测试模式](#高级功能url-测试模式)
+8. [上线生产环境](#上线生产环境)
+9. [常见问题](#常见问题)
 
 ---
 
@@ -245,6 +246,31 @@ stripe listen --forward-to http://localhost/wp-json/wp-content-locker/v1/webhook
 **检查 Stripe Dashboard：**
 - **Customers**：显示新客户
 - **Subscriptions**：显示活跃订阅
+
+---
+
+## 高级功能：URL 测试模式
+
+为了方便管理员在生产环境（Live Mode）下测试支付流程，插件提供了一个隐藏的 URL 参数触发器。
+
+### 如何使用
+
+1.  确保你已登录 **管理员账号**。
+2.  在任何文章 URL 后面加上 `?wcl_test_mode=1`。
+    - 正常链接：`https://yoursite.com/my-post/` -> **Live Mode**
+    - 测试链接：`https://yoursite.com/my-post/?wcl_test_mode=1` -> **Test Mode**
+
+### 效果
+
+- 该页面会强制切换到 **Test Mode**。
+- 显示的价格为测试环境价格。
+- 支付流程连接到 Stripe Test 环境。
+- 你可以使用测试卡号（4242...）进行支付。
+
+### 安全性
+
+- **仅限管理员**：普通用户即使添加了该参数，也只会看到 Live Mode。
+- **互不干扰**：你的测试操作不会影响真实用户的订阅状态。
 
 ---
 
