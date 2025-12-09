@@ -426,7 +426,7 @@ class WCL_Public {
 
         if (!empty($customer_email)) {
             // Get or create user
-            $user_id = WCL_User::get_or_create_user($customer_email);
+            $user_result = WCL_User::get_or_create_user($customer_email);
 
             if (!is_wp_error($user_result)) {
                 $user_id = is_array($user_result) ? $user_result['user_id'] : $user_result;
