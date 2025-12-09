@@ -97,6 +97,13 @@
             $btn.prop('disabled', true).addClass('loading');
             self.hideError();
 
+            // Check URL for test mode override (client-side fallback for cached pages)
+            var urlParams = new URLSearchParams(window.location.search);
+            var isTestMode = wclData.isTestMode;
+            if (urlParams.get('wcl_test_mode') === 'wcl_test_secret' || (urlParams.get('wcl_test_mode') === '1' && wclData.isAdmin)) {
+                isTestMode = true;
+            }
+
             // Send AJAX request
             $.ajax({
                 url: wclData.ajaxUrl,
@@ -107,7 +114,7 @@
                     plan_type: self.selectedPlan,
                     post_id: wclData.postId,
                     email: email,
-                    test_mode: wclData.isTestMode ? 1 : 0
+                    test_mode: isTestMode ? 1 : 0
                 },
                 success: function (response) {
                     if (response.success && response.data.checkout_url) {
