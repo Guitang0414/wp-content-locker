@@ -126,9 +126,7 @@ class WCL_User {
         $plan_name = isset($data['plan_name']) ? $data['plan_name'] : 'Premium Subscription';
         $amount = isset($data['amount']) ? $data['amount'] : '';
         $post_url = isset($data['post_url']) ? $data['post_url'] : home_url();
-        $site_name = get_bloginfo('name');
-        $login_url = wp_login_url();
-        $account_url = home_url('/account'); // Adjust if needed
+        $account_url = $login_url;
 
         $message = '
         <!DOCTYPE html>
