@@ -122,47 +122,52 @@ jQuery(document).ready(function ($) {
             }
         });
     });
-    // Auth Toggle
-    $(document).on('click', '.wcl-toggle-auth', function (e) {
-        e.preventDefault();
-        var target = $(this).data('target');
-        console.log('Toggle clicked', target);
-
-        if (target === 'register') {
-            $('#wcl-login-wrapper').hide();
-            $('#wcl-register-wrapper').fadeIn();
-        } else {
-            $('#wcl-register-wrapper').hide();
-            $('#wcl-login-wrapper').fadeIn();
-        }
-    });
-
-    // Register Form
-    $(document).on('submit', '.wcl-register-form', function (e) {
-        e.preventDefault();
-        var form = $(this);
-        var btn = form.find('button');
-        var msg = form.siblings('.wcl-message');
-
-        btn.prop('disabled', true).text(wclAccount.strings.processing || 'Processing...');
-        msg.hide().removeClass('success error');
-
-        $.post(wclAccount.ajaxUrl, {
-            action: 'wcl_register',
-            nonce: wclAccount.nonce,
-            email: form.find('input[name="email"]').val(),
-            name: form.find('input[name="name"]').val(),
-            password: form.find('input[name="password"]').val()
-        }, function (response) {
-            if (response.success) {
-                msg.addClass('success').text(response.data.message).show();
-                setTimeout(function () {
-                    location.reload();
-                }, 1500);
-            } else {
-                btn.prop('disabled', false).text('Register');
-                msg.addClass('error').text(response.data.message).show();
-            }
+} else {
+    btn.prop('disabled', false).text('Register');
+    msg.addClass('error').text(response.data.message).show();
+}
         });
     });
+
+// Lost Password Form
+$(document).on('submit', '.wcl-lost-password-form', function (e) {
+    e.preventDefault();
+    var form = $(this);
+    var btn = form.find('button');
+    var msg = form.siblings('.wcl-message');
+
+    btn.prop('disabled', true).text(wclAccount.strings.processing || 'Processing...');
+    msg.hide().removeClass('success error');
+
+    $.post(wclAccount.ajaxUrl, {
+        action: 'wcl_lost_password',
+        nonce: wclAccount.nonce,
+        user_login: form.find('input[name="user_login"]').val()
+    }, function (response) {
+        btn.prop('disabled', false).text('Get New Password');
+        if (response.success) {
+            msg.addClass('success').text(response.data.message).show();
+            form[0].reset();
+        } else {
+            msg.addClass('error').text(response.data.message).show();
+        }
+    });
+});
+
+// Update Auth Toggle logic for lost password
+$(document).on('click', '.wcl-toggle-auth', function (e) {
+    e.preventDefault();
+    var target = $(this).data('target');
+    console.log('Toggle clicked', target);
+
+    $('#wcl-login-wrapper, #wcl-register-wrapper, #wcl-lost-password-wrapper').hide();
+
+    if (target === 'register') {
+        $('#wcl-register-wrapper').fadeIn();
+    } else if (target === 'lost-password') {
+        $('#wcl-lost-password-wrapper').fadeIn();
+    } else {
+        $('#wcl-login-wrapper').fadeIn();
+    }
+});
 });

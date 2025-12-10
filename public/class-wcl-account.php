@@ -23,6 +23,8 @@ class WCL_Account {
         add_action('wp_ajax_wcl_update_profile', array($this, 'ajax_update_profile'));
         add_action('wp_ajax_wcl_register', array($this, 'ajax_register'));
         add_action('wp_ajax_nopriv_wcl_register', array($this, 'ajax_register'));
+        add_action('wp_ajax_wcl_lost_password', array($this, 'ajax_lost_password'));
+        add_action('wp_ajax_nopriv_wcl_lost_password', array($this, 'ajax_lost_password'));
     }
 
     /**
@@ -151,6 +153,74 @@ class WCL_Account {
         wp_send_json_success(array(
             'message' => __('Registration successful! Redirecting...', 'wp-content-locker'),
         ));
+    }
+
+    /**
+     * AJAX handler for lost password
+     */
+    public function ajax_lost_password() {
+        // Verify nonce
+        if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        $user_login = isset($_POST['user_login']) ? sanitize_text_field($_POST['user_login']) : '';
+
+        if (empty($user_login)) {
+            wp_send_json_error(array('message' => __('Please enter a username or email address.', 'wp-content-locker')));
+        }
+
+        // Use standard WP function to send password reset email
+        // Note: retrieve_password returns WP_Error or true (bool) or object
+        // Depending on WP version, it might not be available if not included.
+        // It's usually in wp-login.php but also wp-includes/user.php
+        
+        // We will use the retrieve_password function logic manually if need be, 
+        // but 'retrieve_password' is standard since WP 2.5? 
+        // Actually, let's use the 'retrieve_password' function if it exists.
+        
+        if (!function_exists('retrieve_password')) {
+            require_once ABSPATH . 'wp-includes/user.php';
+        }
+        
+        // However, retrieve_password isn't a standard public API function in all contexts.
+        // The robust way is to use existing WP logic.
+        
+        $user_data = get_user_by('login', $user_login);
+        if (!$user_data) {
+            $user_data = get_user_by('email', $user_login);
+        }
+
+        // For security, do not reveal if user exists or not, but return success.
+        // However, standard WP behavior is to show errors.
+        if (!$user_data) {
+            wp_send_json_error(array('message' => __('Invalid username or email.', 'wp-content-locker')));
+        }
+
+        // Generate reset key
+        $key = get_password_reset_key($user_data);
+        if (is_wp_error($key)) {
+            wp_send_json_error(array('message' => $key->get_error_message()));
+        }
+
+        // Send email
+        $message = __('Someone has requested a password reset for the following account:', 'wp-content-locker') . "\r\n\r\n";
+        $message .= network_home_url('/') . "\r\n\r\n";
+        $message .= sprintf(__('Username: %s', 'wp-content-locker'), $user_data->user_login) . "\r\n\r\n";
+        $message .= __('If this was a mistake, just ignore this email and nothing will happen.', 'wp-content-locker') . "\r\n\r\n";
+        $message .= __('To reset your password, visit the following address:', 'wp-content-locker') . "\r\n\r\n";
+        
+        // Here we can point to standard wp-login.php OR our custom page if we build stage 2
+        // For now, let's point to standard WP login to ensure it works reliably first.
+        $message .= network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_data->user_login), 'login') . "\r\n";
+
+        $title = sprintf(__('[%s] Password Reset', 'wp-content-locker'), get_bloginfo('name'));
+
+        if (wp_mail($user_data->user_email, wp_specialchars_decode($title), $message)) {
+            wp_send_json_success(array('message' => __('Check your email for the confirmation link.', 'wp-content-locker')));
+        } else {
+            wp_send_json_error(array('message' => __('The email could not be sent.', 'wp-content-locker')));
+        }
     }
 
     /**

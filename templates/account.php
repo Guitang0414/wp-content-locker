@@ -40,7 +40,7 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                     </button>
                     <div class="wcl-auth-links">
                         <p>
-                            <a href="<?php echo esc_url(wp_lostpassword_url()); ?>"><?php _e('Forgot your password?', 'wp-content-locker'); ?></a>
+                            <a href="#" class="wcl-toggle-auth" data-target="lost-password"><?php _e('Forgot your password?', 'wp-content-locker'); ?></a>
                         </p>
                         <p>
                             <?php _e('Don\'t have an account?', 'wp-content-locker'); ?> 
@@ -75,6 +75,29 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                         <p>
                             <?php _e('Already have an account?', 'wp-content-locker'); ?> 
                             <a href="#" class="wcl-toggle-auth" data-target="login"><?php _e('Login Here', 'wp-content-locker'); ?></a>
+                        </p>
+                    </div>
+                </form>
+                </form>
+            </div>
+
+            <!-- Lost Password Form -->
+            <div id="wcl-lost-password-wrapper" style="display: none;">
+                <h2 class="wcl-account-title"><?php _e('Reset Password', 'wp-content-locker'); ?></h2>
+                <div class="wcl-message error" style="display: none;"></div>
+                <p class="wcl-auth-desc"><?php _e('Enter your email address and we\'ll send you a link to reset your password.', 'wp-content-locker'); ?></p>
+                
+                <form class="wcl-lost-password-form" method="post">
+                    <div class="wcl-form-field">
+                        <label for="wcl_lost_email"><?php _e('Username or Email', 'wp-content-locker'); ?></label>
+                        <input type="text" id="wcl_lost_email" name="user_login" required />
+                    </div>
+                    <button type="submit" class="wcl-btn wcl-btn-primary wcl-lost-password-btn">
+                        <?php _e('Get New Password', 'wp-content-locker'); ?>
+                    </button>
+                    <div class="wcl-auth-links">
+                        <p>
+                            <a href="#" class="wcl-toggle-auth" data-target="login"><?php _e('Back to Login', 'wp-content-locker'); ?></a>
                         </p>
                     </div>
                 </form>
