@@ -1,4 +1,5 @@
 jQuery(document).ready(function ($) {
+    console.log('WCL Account Script Loaded');
     // Tab Switching
     $('.wcl-nav-item').click(function () {
         var tab = $(this).data('tab');

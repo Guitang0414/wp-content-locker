@@ -30,7 +30,8 @@ class WCL_Account {
      */
     public function enqueue_assets() {
         global $post;
-        if (!is_a($post, 'WP_Post') || !has_shortcode($post->post_content, 'wcl_account')) {
+        // removed has_shortcode check as it can fail with page builders
+        if (!is_a($post, 'WP_Post')) {
             return;
         }
 
