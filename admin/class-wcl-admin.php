@@ -31,7 +31,18 @@ class WCL_Admin {
             __('Subscriptions', 'wp-content-locker'),
             'manage_options',
             'wcl-subscriptions',
+            'wcl-subscriptions',
             array($this, 'render_subscriptions_page')
+        );
+
+        // Add Logs submenu
+        add_submenu_page(
+            'wp-content-locker',
+            __('Logs', 'wp-content-locker'),
+            __('Logs', 'wp-content-locker'),
+            'manage_options',
+            'wcl-logs',
+            array($this, 'render_logs_page')
         );
     }
 
@@ -633,6 +644,67 @@ class WCL_Admin {
                     </div>
                 </div>
             <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render logs page
+     */
+    public function render_logs_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        $log_file = WP_CONTENT_DIR . '/debug.log';
+
+        // Handle Clear Log action
+        if (isset($_POST['wcl_action']) && $_POST['wcl_action'] === 'clear_log') {
+            check_admin_referer('wcl_clear_log');
+            file_put_contents($log_file, '');
+            add_settings_error('wcl_messages', 'wcl_success', __('Log file cleared.', 'wp-content-locker'), 'updated');
+        }
+
+        // Check if debug logging is enabled
+        if (!defined('WP_DEBUG') || !WP_DEBUG || !defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
+            add_settings_error('wcl_messages', 'wcl_warning', __('WP_DEBUG and WP_DEBUG_LOG must be enabled in wp-config.php for logging to work.', 'wp-content-locker'), 'warning');
+        }
+
+        ?>
+        <div class="wrap">
+            <h1><?php _e('Debug Logs', 'wp-content-locker'); ?></h1>
+            <?php settings_errors('wcl_messages'); ?>
+
+            <div class="card" style="max-width: 100%; margin-top: 20px;">
+                <h2 class="title"><?php _e('Log Viewer', 'wp-content-locker'); ?></h2>
+                <p><?php printf(__('Reading from: %s', 'wp-content-locker'), '<code>' . esc_html($log_file) . '</code>'); ?></p>
+
+                <div style="background: #f0f0f1; border: 1px solid #c3c4c7; padding: 15px; height: 500px; overflow-y: scroll; font-family: monospace; white-space: pre-wrap; margin-bottom: 20px;">
+                    <?php
+                    if (file_exists($log_file)) {
+                        $content = file_get_contents($log_file);
+                        if (empty($content)) {
+                            echo '<em>' . __('Log file is empty.', 'wp-content-locker') . '</em>';
+                        } else {
+                            // Show last 20000 characters to avoid memory issues with huge logs
+                            if (strlen($content) > 20000) {
+                                $content = '... ' . substr($content, -20000);
+                            }
+                            echo esc_html($content);
+                        }
+                    } else {
+                        echo '<em>' . __('Log file not found.', 'wp-content-locker') . '</em>';
+                    }
+                    ?>
+                </div>
+
+                <form method="post">
+                    <?php wp_nonce_field('wcl_clear_log'); ?>
+                    <input type="hidden" name="wcl_action" value="clear_log">
+                    <?php submit_button(__('Clear Log', 'wp-content-locker'), 'secondary', 'submit', false); ?>
+                    <a href="<?php echo esc_url(add_query_arg(array())); ?>" class="button"><?php _e('Refresh', 'wp-content-locker'); ?></a>
+                </form>
+            </div>
         </div>
         <?php
     }
