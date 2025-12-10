@@ -365,6 +365,14 @@ class WCL_Stripe {
         }
 
         $event = json_decode($payload, true);
+        
+        // Auto-switch mode based on event data
+        if (isset($event['livemode'])) {
+            $webhook_mode = $event['livemode'] ? 'live' : 'test';
+            self::set_mode($webhook_mode);
+            error_log('WCL Webhook Mode Switched to: ' . $webhook_mode);
+        }
+
         error_log('WCL Webhook Verified. Event Type: ' . (isset($event['type']) ? $event['type'] : 'unknown'));
 
         if (!$event || !isset($event['type'])) {
