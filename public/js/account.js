@@ -124,6 +124,35 @@ jQuery(document).ready(function ($) {
     });
 
 
+    // Register Form
+    $(document).on('submit', '.wcl-register-form', function (e) {
+        e.preventDefault();
+        var form = $(this);
+        var btn = form.find('button');
+        var msg = form.siblings('.wcl-message');
+
+        btn.prop('disabled', true).text(wclAccount.strings.processing || 'Processing...');
+        msg.hide().removeClass('success error');
+
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_register',
+            nonce: wclAccount.nonce,
+            email: form.find('input[name="email"]').val(),
+            name: form.find('input[name="name"]').val(),
+            password: form.find('input[name="password"]').val()
+        }, function (response) {
+            if (response.success) {
+                msg.addClass('success').text(response.data.message).show();
+                setTimeout(function () {
+                    location.reload();
+                }, 1500);
+            } else {
+                btn.prop('disabled', false).text('Register');
+                msg.addClass('error').text(response.data.message).show();
+            }
+        });
+    });
+
     // Lost Password Form
     $(document).on('submit', '.wcl-lost-password-form', function (e) {
         e.preventDefault();
