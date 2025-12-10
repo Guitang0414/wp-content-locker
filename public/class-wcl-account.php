@@ -14,6 +14,7 @@ class WCL_Account {
      */
     public function __construct() {
         add_shortcode('wcl_account', array($this, 'render_account_page'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
 
         // AJAX handlers
         add_action('wp_ajax_wcl_cancel_subscription', array($this, 'ajax_cancel_subscription'));
@@ -27,6 +28,11 @@ class WCL_Account {
      * Enqueue account page assets
      */
     public function enqueue_assets() {
+        global $post;
+        if (!is_a($post, 'WP_Post') || !has_shortcode($post->post_content, 'wcl_account')) {
+            return;
+        }
+
         wp_enqueue_style(
             'wcl-account',
             WCL_PLUGIN_URL . 'public/css/account.css',
@@ -60,9 +66,6 @@ class WCL_Account {
      * Render account page shortcode
      */
     public function render_account_page($atts) {
-        // Enqueue assets
-        $this->enqueue_assets();
-
         ob_start();
         include WCL_PLUGIN_DIR . 'templates/account.php';
         return ob_get_clean();
