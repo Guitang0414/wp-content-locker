@@ -14,33 +14,71 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
 
 <div class="wcl-account-wrapper">
     <?php if (!$is_logged_in) : ?>
-        <!-- Login Form -->
-        <div class="wcl-login-section">
-            <h2 class="wcl-account-title"><?php _e('Login', 'wp-content-locker'); ?></h2>
-            <div class="wcl-message error" style="display: none;"></div>
-            
-            <form class="wcl-login-form" method="post">
-                <div class="wcl-form-field">
-                    <label for="wcl_username"><?php _e('Username or Email', 'wp-content-locker'); ?></label>
-                    <input type="text" id="wcl_username" name="username" required />
-                </div>
-                <div class="wcl-form-field">
-                    <label for="wcl_password"><?php _e('Password', 'wp-content-locker'); ?></label>
-                    <input type="password" id="wcl_password" name="password" required />
-                </div>
-                <div class="wcl-form-field">
-                    <label>
-                        <input type="checkbox" name="remember" value="1" />
-                        <?php _e('Remember me', 'wp-content-locker'); ?>
-                    </label>
-                </div>
-                <button type="submit" class="wcl-btn wcl-btn-primary wcl-login-btn">
-                    <?php _e('Login', 'wp-content-locker'); ?>
-                </button>
-                <p style="text-align: center; margin-top: 15px;">
-                    <a href="<?php echo esc_url(wp_lostpassword_url()); ?>"><?php _e('Forgot your password?', 'wp-content-locker'); ?></a>
-                </p>
-            </form>
+        <div class="wcl-auth-section">
+            <!-- Login Form -->
+            <div id="wcl-login-wrapper">
+                <h2 class="wcl-account-title"><?php _e('Login', 'wp-content-locker'); ?></h2>
+                <div class="wcl-message error" style="display: none;"></div>
+                
+                <form class="wcl-login-form" method="post">
+                    <div class="wcl-form-field">
+                        <label for="wcl_username"><?php _e('Username or Email', 'wp-content-locker'); ?></label>
+                        <input type="text" id="wcl_username" name="username" required />
+                    </div>
+                    <div class="wcl-form-field">
+                        <label for="wcl_password"><?php _e('Password', 'wp-content-locker'); ?></label>
+                        <input type="password" id="wcl_password" name="password" required />
+                    </div>
+                    <div class="wcl-form-field">
+                        <label>
+                            <input type="checkbox" name="remember" value="1" />
+                            <?php _e('Remember me', 'wp-content-locker'); ?>
+                        </label>
+                    </div>
+                    <button type="submit" class="wcl-btn wcl-btn-primary wcl-login-btn">
+                        <?php _e('Login', 'wp-content-locker'); ?>
+                    </button>
+                    <div class="wcl-auth-links">
+                        <p>
+                            <a href="<?php echo esc_url(wp_lostpassword_url()); ?>"><?php _e('Forgot your password?', 'wp-content-locker'); ?></a>
+                        </p>
+                        <p>
+                            <?php _e('Don\'t have an account?', 'wp-content-locker'); ?> 
+                            <a href="#" class="wcl-toggle-auth" data-target="register"><?php _e('Register Now', 'wp-content-locker'); ?></a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div id="wcl-register-wrapper" style="display: none;">
+                <h2 class="wcl-account-title"><?php _e('Create Account', 'wp-content-locker'); ?></h2>
+                <div class="wcl-message error" style="display: none;"></div>
+                
+                <form class="wcl-register-form" method="post">
+                    <div class="wcl-form-field">
+                        <label for="wcl_reg_email"><?php _e('Email Address', 'wp-content-locker'); ?></label>
+                        <input type="email" id="wcl_reg_email" name="email" required />
+                    </div>
+                    <div class="wcl-form-field">
+                        <label for="wcl_reg_name"><?php _e('Full Name', 'wp-content-locker'); ?></label>
+                        <input type="text" id="wcl_reg_name" name="name" required />
+                    </div>
+                    <div class="wcl-form-field">
+                        <label for="wcl_reg_password"><?php _e('Password', 'wp-content-locker'); ?></label>
+                        <input type="password" id="wcl_reg_password" name="password" required minlength="8" />
+                    </div>
+                    <button type="submit" class="wcl-btn wcl-btn-primary wcl-register-btn">
+                        <?php _e('Register', 'wp-content-locker'); ?>
+                    </button>
+                    <div class="wcl-auth-links">
+                        <p>
+                            <?php _e('Already have an account?', 'wp-content-locker'); ?> 
+                            <a href="#" class="wcl-toggle-auth" data-target="login"><?php _e('Login Here', 'wp-content-locker'); ?></a>
+                        </p>
+                    </div>
+                </form>
+            </div>
         </div>
 
     <?php else : ?>

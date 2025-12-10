@@ -21,7 +21,8 @@ class WCL_Account {
         add_action('wp_ajax_wcl_login', array($this, 'ajax_login'));
         add_action('wp_ajax_nopriv_wcl_login', array($this, 'ajax_login'));
         add_action('wp_ajax_wcl_update_profile', array($this, 'ajax_update_profile'));
-        add_action('wp_ajax_wcl_change_password', array($this, 'ajax_change_password'));
+        add_action('wp_ajax_wcl_register', array($this, 'ajax_register'));
+        add_action('wp_ajax_nopriv_wcl_register', array($this, 'ajax_register'));
     }
 
     /**
@@ -102,6 +103,52 @@ class WCL_Account {
         wp_send_json_success(array(
             'message' => __('Login successful!', 'wp-content-locker'),
             'redirect' => '',
+        ));
+    }
+
+    /**
+     * AJAX handler for register
+     */
+    public function ajax_register() {
+        // Verify nonce
+        if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
+        $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+        $password = isset($_POST['password']) ? $_POST['password'] : '';
+
+        if (empty($email) || empty($password)) {
+            wp_send_json_error(array('message' => __('Please fill in all required fields.', 'wp-content-locker')));
+        }
+        
+        if (!is_email($email)) {
+            wp_send_json_error(array('message' => __('Invalid email address.', 'wp-content-locker')));
+        }
+        
+        if (strlen($password) < 8) {
+            wp_send_json_error(array('message' => __('Password must be at least 8 characters.', 'wp-content-locker')));
+        }
+
+        if (email_exists($email)) {
+            wp_send_json_error(array('message' => __('Account already exists with this email.', 'wp-content-locker')));
+        }
+
+        // Create user
+        $result = WCL_User::create_user($email, $name, $password);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
+        }
+        
+        $user_id = is_array($result) ? $result['user_id'] : $result;
+
+        // Auto login
+        WCL_User::auto_login($user_id);
+
+        wp_send_json_success(array(
+            'message' => __('Registration successful! Redirecting...', 'wp-content-locker'),
         ));
     }
 

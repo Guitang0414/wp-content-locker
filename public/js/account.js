@@ -1,22 +1,22 @@
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
     // Tab Switching
-    $('.wcl-nav-item').click(function() {
+    $('.wcl-nav-item').click(function () {
         var tab = $(this).data('tab');
-        
+
         $('.wcl-nav-item').removeClass('active');
         $(this).addClass('active');
-        
+
         $('.wcl-tab-content').removeClass('active');
         $('#wcl-tab-' + tab).addClass('active');
     });
 
     // Profile Update
-    $('#wcl-profile-form').submit(function(e) {
+    $('#wcl-profile-form').submit(function (e) {
         e.preventDefault();
         var form = $(this);
         var btn = form.find('button');
         var msg = form.siblings('.wcl-message');
-        
+
         btn.prop('disabled', true).text(wclAccount.strings.saving);
         msg.hide().removeClass('success error');
 
@@ -25,7 +25,7 @@ jQuery(document).ready(function($) {
             nonce: wclAccount.nonce,
             first_name: form.find('input[name="first_name"]').val(),
             last_name: form.find('input[name="last_name"]').val()
-        }, function(response) {
+        }, function (response) {
             btn.prop('disabled', false).text('Save Changes');
             if (response.success) {
                 msg.addClass('success').text(response.data.message).show();
@@ -38,12 +38,12 @@ jQuery(document).ready(function($) {
     });
 
     // Password Change
-    $('#wcl-password-form').submit(function(e) {
+    $('#wcl-password-form').submit(function (e) {
         e.preventDefault();
         var form = $(this);
         var btn = form.find('button');
         var msg = form.siblings('.wcl-message');
-        
+
         var newPass = form.find('input[name="new_password"]').val();
         var confirmPass = form.find('input[name="confirm_password"]').val();
 
@@ -51,7 +51,7 @@ jQuery(document).ready(function($) {
             msg.addClass('error').text(wclAccount.strings.passwordMismatch).show();
             return;
         }
-        
+
         btn.prop('disabled', true).text(wclAccount.strings.saving);
         msg.hide().removeClass('success error');
 
@@ -61,7 +61,7 @@ jQuery(document).ready(function($) {
             current_password: form.find('input[name="current_password"]').val(),
             new_password: newPass,
             confirm_password: confirmPass
-        }, function(response) {
+        }, function (response) {
             btn.prop('disabled', false).text('Update Password');
             if (response.success) {
                 msg.addClass('success').text(response.data.message).show();
@@ -73,12 +73,12 @@ jQuery(document).ready(function($) {
     });
 
     // Login Form
-    $('.wcl-login-form').submit(function(e) {
+    $('.wcl-login-form').submit(function (e) {
         e.preventDefault();
         var form = $(this);
         var btn = form.find('button');
         var msg = form.siblings('.wcl-message');
-        
+
         btn.prop('disabled', true).text(wclAccount.strings.loggingIn);
         msg.hide().removeClass('success error');
 
@@ -88,7 +88,7 @@ jQuery(document).ready(function($) {
             username: form.find('input[name="username"]').val(),
             password: form.find('input[name="password"]').val(),
             remember: form.find('input[name="remember"]').is(':checked')
-        }, function(response) {
+        }, function (response) {
             if (response.success) {
                 location.reload();
             } else {
@@ -99,7 +99,7 @@ jQuery(document).ready(function($) {
     });
 
     // Cancel Subscription
-    $('.wcl-cancel-subscription-btn').click(function() {
+    $('.wcl-cancel-subscription-btn').click(function () {
         if (!confirm(wclAccount.strings.confirmCancel)) {
             return;
         }
@@ -111,13 +111,55 @@ jQuery(document).ready(function($) {
         $.post(wclAccount.ajaxUrl, {
             action: 'wcl_cancel_subscription',
             nonce: wclAccount.nonce
-        }, function(response) {
+        }, function (response) {
             if (response.success) {
                 alert(response.data.message);
                 location.reload();
             } else {
                 alert(response.data.message);
                 btn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+    // Auth Toggle
+    $('.wcl-toggle-auth').click(function (e) {
+        e.preventDefault();
+        var target = $(this).data('target');
+
+        if (target === 'register') {
+            $('#wcl-login-wrapper').hide();
+            $('#wcl-register-wrapper').fadeIn();
+        } else {
+            $('#wcl-register-wrapper').hide();
+            $('#wcl-login-wrapper').fadeIn();
+        }
+    });
+
+    // Register Form
+    $('.wcl-register-form').submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+        var btn = form.find('button');
+        var msg = form.siblings('.wcl-message');
+
+        btn.prop('disabled', true).text(wclAccount.strings.processing || 'Processing...');
+        msg.hide().removeClass('success error');
+
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_register',
+            nonce: wclAccount.nonce,
+            email: form.find('input[name="email"]').val(),
+            name: form.find('input[name="name"]').val(),
+            password: form.find('input[name="password"]').val()
+        }, function (response) {
+            if (response.success) {
+                msg.addClass('success').text(response.data.message).show();
+                setTimeout(function () {
+                    location.reload();
+                }, 1500);
+            } else {
+                btn.prop('disabled', false).text('Register');
+                msg.addClass('error').text(response.data.message).show();
             }
         });
     });

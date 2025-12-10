@@ -36,12 +36,14 @@ class WCL_User {
     /**
      * Create a new WordPress user
      */
-    public static function create_user($email, $name = '') {
+    public static function create_user($email, $name = '', $password = null) {
         // Generate username from email
         $username = self::generate_username($email);
 
-        // Generate random password
-        $password = wp_generate_password(12, true);
+        // Generate random password if not provided
+        if (empty($password)) {
+            $password = wp_generate_password(12, true);
+        }
 
         // Parse name
         $first_name = '';
