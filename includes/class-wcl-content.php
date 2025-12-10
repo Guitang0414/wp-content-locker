@@ -44,8 +44,8 @@ class WCL_Content {
         if (is_user_logged_in()) {
             $user_id = get_current_user_id();
             // Check if user has active subscription
-            $mode = WCL_Stripe::get_mode();
-            if (WCL_Subscription::has_active_subscription($user_id, $mode)) {
+            // Check if user has active subscription (ignore mode mismatch for testing)
+            if (WCL_Subscription::has_active_subscription($user_id)) {
                 return true;
             }
         }

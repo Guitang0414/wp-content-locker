@@ -517,7 +517,27 @@ class WCL_Stripe {
                 
                 // Get price details for email
                 $price_id = $subscription['items']['data'][0]['price']['id'];
-                $amount_formatted = $this->get_formatted_price($price_id);
+                
+                // Use actual amount paid from session if available, otherwise fall back to price
+                if (isset($session['amount_total']) && isset($session['currency'])) {
+                    $currency = strtoupper($session['currency']);
+                    $amount = $session['amount_total'] / 100;
+                    
+                    $symbols = array(
+                        'USD' => '$',
+                        'EUR' => '€',
+                        'GBP' => '£',
+                        'JPY' => '¥',
+                        'CNY' => '¥',
+                    );
+                    $symbol = isset($symbols[$currency]) ? $symbols[$currency] : $currency . ' ';
+                    
+                    $interval_text = ($interval === 'year') ? '/' . __('year', 'wp-content-locker') : '/' . __('month', 'wp-content-locker');
+                    $amount_formatted = $symbol . number_format($amount, 2) . $interval_text;
+                } else {
+                    $amount_formatted = $this->get_formatted_price($price_id);
+                }
+
                 $plan_name = ($interval === 'year') ? __('Yearly Subscription', 'wp-content-locker') : __('Monthly Subscription', 'wp-content-locker');
             }
 
