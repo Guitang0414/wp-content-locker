@@ -665,6 +665,13 @@ class WCL_Admin {
             add_settings_error('wcl_messages', 'wcl_success', __('Log file cleared.', 'wp-content-locker'), 'updated');
         }
 
+        // Handle Test Log action
+        if (isset($_POST['wcl_action']) && $_POST['wcl_action'] === 'test_log') {
+            check_admin_referer('wcl_test_log');
+            error_log('WCL: Test Log Entry generated at ' . date('Y-m-d H:i:s'));
+            add_settings_error('wcl_messages', 'wcl_success', __('Test log entry generated. Check if it appears below.', 'wp-content-locker'), 'updated');
+        }
+
         // Check if debug logging is enabled
         if (!defined('WP_DEBUG') || !WP_DEBUG || !defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
             add_settings_error('wcl_messages', 'wcl_warning', __('WP_DEBUG and WP_DEBUG_LOG must be enabled in wp-config.php for logging to work.', 'wp-content-locker'), 'warning');
@@ -698,12 +705,19 @@ class WCL_Admin {
                     ?>
                 </div>
 
-                <form method="post">
+                <form method="post" style="display:inline;">
                     <?php wp_nonce_field('wcl_clear_log'); ?>
                     <input type="hidden" name="wcl_action" value="clear_log">
                     <?php submit_button(__('Clear Log', 'wp-content-locker'), 'secondary', 'submit', false); ?>
-                    <a href="<?php echo esc_url(add_query_arg(array())); ?>" class="button"><?php _e('Refresh', 'wp-content-locker'); ?></a>
                 </form>
+                
+                <form method="post" style="display:inline; margin-left: 10px;">
+                    <?php wp_nonce_field('wcl_test_log'); ?>
+                    <input type="hidden" name="wcl_action" value="test_log">
+                    <?php submit_button(__('Generate Test Log', 'wp-content-locker'), 'primary', 'submit', false); ?>
+                </form>
+
+                <a href="<?php echo esc_url(add_query_arg(array())); ?>" class="button" style="margin-left: 10px;"><?php _e('Refresh', 'wp-content-locker'); ?></a>
             </div>
         </div>
         <?php
