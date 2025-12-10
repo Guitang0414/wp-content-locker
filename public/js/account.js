@@ -122,9 +122,10 @@ jQuery(document).ready(function ($) {
         });
     });
     // Auth Toggle
-    $('.wcl-toggle-auth').click(function (e) {
+    $(document).on('click', '.wcl-toggle-auth', function (e) {
         e.preventDefault();
         var target = $(this).data('target');
+        console.log('Toggle clicked', target);
 
         if (target === 'register') {
             $('#wcl-login-wrapper').hide();
@@ -136,7 +137,7 @@ jQuery(document).ready(function ($) {
     });
 
     // Register Form
-    $('.wcl-register-form').submit(function (e) {
+    $(document).on('submit', '.wcl-register-form', function (e) {
         e.preventDefault();
         var form = $(this);
         var btn = form.find('button');
