@@ -78,7 +78,7 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                         </p>
                     </div>
                 </form>
-                </form>
+
             </div>
 
             <!-- Lost Password Form -->
