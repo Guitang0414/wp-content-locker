@@ -31,7 +31,6 @@ class WCL_Admin {
             __('Subscriptions', 'wp-content-locker'),
             'manage_options',
             'wcl-subscriptions',
-            'wcl-subscriptions',
             array($this, 'render_subscriptions_page')
         );
 
