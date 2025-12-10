@@ -42,7 +42,7 @@ class WCL_Activator {
         $charset_collate = $wpdb->get_charset_collate();
         $table_name = $wpdb->prefix . 'wcl_subscriptions';
 
-        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        $sql = "CREATE TABLE $table_name (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             user_id bigint(20) NOT NULL,
             stripe_customer_id varchar(255) NOT NULL,
@@ -54,7 +54,7 @@ class WCL_Activator {
             current_period_end datetime DEFAULT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
+            PRIMARY KEY  (id),
             KEY user_id (user_id),
             KEY stripe_customer_id (stripe_customer_id),
             KEY stripe_subscription_id (stripe_subscription_id),
