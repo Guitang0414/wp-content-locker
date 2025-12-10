@@ -434,9 +434,46 @@ class WCL_Public {
                 // Auto-login the user
                 WCL_User::auto_login($user_id);
 
-                // The webhook will handle creating the subscription record
-                // But we can update user meta here for immediate access
+                // Create subscription record immediately
+                $subscription_id = '';
+                if (isset($session['subscription'])) {
+                    if (is_array($session['subscription'])) {
+                        $subscription_id = $session['subscription']['id'];
+                        $current_period_start = isset($session['subscription']['current_period_start']) ? date('Y-m-d H:i:s', $session['subscription']['current_period_start']) : null;
+                        $current_period_end = isset($session['subscription']['current_period_end']) ? date('Y-m-d H:i:s', $session['subscription']['current_period_end']) : null;
+                        
+                        // Determine plan type
+                        $plan_type = 'monthly';
+                        if (isset($session['subscription']['items']['data'][0]['price']['recurring']['interval'])) {
+                            $interval = $session['subscription']['items']['data'][0]['price']['recurring']['interval'];
+                            $plan_type = ($interval === 'year') ? 'yearly' : 'monthly';
+                        }
+                    } else {
+                        $subscription_id = $session['subscription'];
+                        // If subscription is not expanded, we might settle for defaults or fetch it, 
+                        // but usually it is expanded in the call above. 
+                        // For safety, let's fetch if needed, or just proceed. 
+                        // The get_checkout_session call above expands it.
+                    }
+                }
+
                 $customer_id = is_array($session['customer']) ? $session['customer']['id'] : $session['customer'];
+                $metadata = isset($session['metadata']) ? $session['metadata'] : array();
+                $plan_type_meta = isset($metadata['plan_type']) ? $metadata['plan_type'] : 'monthly';
+
+                if (!empty($subscription_id)) {
+                     WCL_Subscription::create_subscription(array(
+                        'user_id' => $user_id,
+                        'stripe_customer_id' => $customer_id,
+                        'stripe_subscription_id' => $subscription_id,
+                        'plan_type' => isset($plan_type) ? $plan_type : $plan_type_meta,
+                        'mode' => (isset($session['livemode']) && $session['livemode']) ? 'live' : 'test',
+                        'status' => 'active',
+                        'current_period_start' => isset($current_period_start) ? $current_period_start : null,
+                        'current_period_end' => isset($current_period_end) ? $current_period_end : null,
+                    ));
+                }
+
                 update_user_meta($user_id, '_wcl_stripe_customer_id', $customer_id);
                 update_user_meta($user_id, '_wcl_subscription_status', 'active');
             }
