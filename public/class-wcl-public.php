@@ -58,7 +58,7 @@ class WCL_Public {
             'wcl-public',
             WCL_PLUGIN_URL . 'public/css/public.css',
             array(),
-            WCL_VERSION
+            file_exists(WCL_PLUGIN_DIR . 'public/css/public.css') ? filemtime(WCL_PLUGIN_DIR . 'public/css/public.css') : WCL_VERSION
         );
     }
 

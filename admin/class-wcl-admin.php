@@ -497,7 +497,7 @@ class WCL_Admin {
         if ('settings_page_wp-content-locker' !== $hook) {
             return;
         }
-        wp_enqueue_style('wcl-admin', WCL_PLUGIN_URL . 'admin/css/admin.css', array(), WCL_VERSION);
+        wp_enqueue_style('wcl-admin', WCL_PLUGIN_URL . 'admin/css/admin.css', array(), file_exists(WCL_PLUGIN_DIR . 'admin/css/admin.css') ? filemtime(WCL_PLUGIN_DIR . 'admin/css/admin.css') : WCL_VERSION);
     }
 
     /**
@@ -507,7 +507,7 @@ class WCL_Admin {
         if ('settings_page_wp-content-locker' !== $hook) {
             return;
         }
-        wp_enqueue_script('wcl-admin', WCL_PLUGIN_URL . 'admin/js/admin.js', array('jquery'), WCL_VERSION, true);
+        wp_enqueue_script('wcl-admin', WCL_PLUGIN_URL . 'admin/js/admin.js', array('jquery'), file_exists(WCL_PLUGIN_DIR . 'admin/js/admin.js') ? filemtime(WCL_PLUGIN_DIR . 'admin/js/admin.js') : WCL_VERSION, true);
     }
 
     /**

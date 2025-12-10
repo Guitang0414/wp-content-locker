@@ -38,14 +38,14 @@ class WCL_Account {
             'wcl-account',
             WCL_PLUGIN_URL . 'public/css/account.css',
             array(),
-            WCL_VERSION
+            file_exists(WCL_PLUGIN_DIR . 'public/css/account.css') ? filemtime(WCL_PLUGIN_DIR . 'public/css/account.css') : WCL_VERSION
         );
 
         wp_enqueue_script(
             'wcl-account',
             WCL_PLUGIN_URL . 'public/js/account.js',
             array('jquery'),
-            WCL_VERSION,
+            file_exists(WCL_PLUGIN_DIR . 'public/js/account.js') ? filemtime(WCL_PLUGIN_DIR . 'public/js/account.js') : WCL_VERSION,
             true
         );
 
