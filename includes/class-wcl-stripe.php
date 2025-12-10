@@ -549,6 +549,17 @@ class WCL_Stripe {
                 : null;
         }
 
+        // Fetch Invoice PDF if available
+        $invoice_pdf = '';
+        if (isset($session['invoice']) && !empty($session['invoice'])) {
+            $invoice_id = is_array($session['invoice']) ? $session['invoice']['id'] : $session['invoice'];
+            // We need to fetch the invoice object to get the PDF link
+            $invoice = $this->api_request('/invoices/' . $invoice_id);
+            if (!is_wp_error($invoice) && isset($invoice['invoice_pdf'])) {
+                $invoice_pdf = $invoice['invoice_pdf'];
+            }
+        }
+
         // Create subscription record
         WCL_Subscription::create_subscription(array(
             'user_id' => $user_id,
@@ -572,7 +583,8 @@ class WCL_Stripe {
             'new_user' => is_array($user_result) ? $user_result['new_user'] : false,
             'plan_name' => $plan_name,
             'amount' => $amount_formatted,
-            'post_url' => $post_id ? get_permalink($post_id) : home_url()
+            'post_url' => $post_id ? get_permalink($post_id) : home_url(),
+            'invoice_pdf' => $invoice_pdf
         );
         WCL_User::send_subscription_email($email_data);
     }

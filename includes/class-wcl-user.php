@@ -164,6 +164,14 @@ class WCL_User {
                                 <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">' . __('Amount:', 'wp-content-locker') . '</td>
                                 <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: bold;">' . esc_html($data['amount']) . '</td>
                             </tr>
+                            ' . (!empty($data['invoice_pdf']) ? '
+                            <tr>
+                                <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">' . __('Invoice:', 'wp-content-locker') . '</td>
+                                <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
+                                    <a href="' . esc_url($data['invoice_pdf']) . '" style="color: #2c3e50; text-decoration: underline;">' . __('Download PDF', 'wp-content-locker') . '</a>
+                                </td>
+                            </tr>
+                            ' : '') . '
                         </table>
                     </div>
 
