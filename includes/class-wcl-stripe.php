@@ -258,6 +258,14 @@ class WCL_Stripe {
             'success_url' => $success_url,
             'cancel_url' => $cancel_url,
             'allow_promotion_codes' => 'true',
+            'consent_collection' => array(
+                'terms_of_service' => 'required',
+            ),
+            'custom_text' => array(
+                'terms_of_service_acceptance' => array(
+                    'message' => 'I agree to the [Terms of Service](https://arizonainsiders.com/terms-of-service/)',
+                ),
+            ),
         );
 
         if (isset($params['discounts'])) {
@@ -319,6 +327,15 @@ class WCL_Stripe {
             ));
         }
         return $this->api_request('/subscriptions/' . $subscription_id, 'DELETE');
+    }
+
+    /**
+     * Resume subscription
+     */
+    public function resume_subscription($subscription_id) {
+        return $this->api_request('/subscriptions/' . $subscription_id, 'POST', array(
+            'cancel_at_period_end' => 'false',
+        ));
     }
 
     /**

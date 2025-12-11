@@ -232,6 +232,33 @@ class WCL_Subscription {
     }
 
     /**
+     * Resume subscription
+     */
+    public static function resume_subscription($subscription_id) {
+        $subscription = self::get_subscription($subscription_id);
+        if (!$subscription) {
+            return new WP_Error('not_found', __('Subscription not found.', 'wp-content-locker'));
+        }
+
+        // Resume in Stripe
+        $stripe = WCL_Stripe::get_instance();
+        $result = $stripe->resume_subscription($subscription->stripe_subscription_id);
+
+        if (is_wp_error($result)) {
+            return $result;
+        }
+
+        // Update local record
+        $status = 'active';
+        self::update_subscription($subscription_id, array('status' => $status));
+
+        // Update user meta
+        update_user_meta($subscription->user_id, '_wcl_subscription_status', $status);
+
+        return true;
+    }
+
+    /**
      * Delete subscription
      */
     public static function delete_subscription($subscription_id) {

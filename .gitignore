@@ -22,3 +22,6 @@ debug.log
 
 # Build artifacts
 *.zip
+
+# Testing
+.phpunit.result.cache

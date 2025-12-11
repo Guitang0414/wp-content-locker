@@ -203,6 +203,12 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                                     <?php _e('Cancel Subscription', 'wp-content-locker'); ?>
                                 </button>
                             <?php endif; ?>
+                            
+                            <?php if ($subscription_data['can_resume']) : ?>
+                                <button type="button" class="wcl-btn wcl-resume-btn wcl-resume-subscription-btn">
+                                    <?php _e('Resume Subscription', 'wp-content-locker'); ?>
+                                </button>
+                            <?php endif; ?>
                         </div>
                     <?php else : ?>
                         <p><?php _e('You do not have an active subscription.', 'wp-content-locker'); ?></p>

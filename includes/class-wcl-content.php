@@ -76,7 +76,8 @@ class WCL_Content {
         $dom = new DOMDocument();
         // Suppress warnings for malformed HTML
         libxml_use_internal_errors(true);
-        $dom->loadHTML(mb_convert_encoding('<div>' . $html . '</div>', 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        // Hack to load UTF-8 HTML correctly
+        $dom->loadHTML('<?xml encoding="utf-8" ?><div>' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         libxml_clear_errors();
 
         $char_count = 0;

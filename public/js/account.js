@@ -123,6 +123,30 @@ jQuery(document).ready(function ($) {
         });
     });
 
+    // Resume Subscription
+    $('.wcl-resume-subscription-btn').click(function () {
+        if (!confirm(wclAccount.strings.confirmResume)) {
+            return;
+        }
+
+        var btn = $(this);
+        var originalText = btn.text();
+        btn.prop('disabled', true).text(wclAccount.strings.resuming);
+
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_resume_subscription',
+            nonce: wclAccount.nonce
+        }, function (response) {
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert(response.data.message);
+                btn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+
 
     // Register Form
     $(document).on('submit', '.wcl-register-form', function (e) {

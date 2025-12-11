@@ -18,6 +18,7 @@ class WCL_Account {
 
         // AJAX handlers
         add_action('wp_ajax_wcl_cancel_subscription', array($this, 'ajax_cancel_subscription'));
+        add_action('wp_ajax_wcl_resume_subscription', array($this, 'ajax_resume_subscription'));
         add_action('wp_ajax_wcl_login', array($this, 'ajax_login'));
         add_action('wp_ajax_nopriv_wcl_login', array($this, 'ajax_login'));
         add_action('wp_ajax_wcl_update_profile', array($this, 'ajax_update_profile'));
@@ -57,7 +58,9 @@ class WCL_Account {
             'nonce' => wp_create_nonce('wcl_account_nonce'),
             'strings' => array(
                 'confirmCancel' => __('Are you sure you want to cancel your subscription? You will still have access until the end of your billing period.', 'wp-content-locker'),
+                'confirmResume' => __('Are you sure you want to resume your subscription?', 'wp-content-locker'),
                 'canceling' => __('Canceling...', 'wp-content-locker'),
+                'resuming' => __('Resuming...', 'wp-content-locker'),
                 'loggingIn' => __('Logging in...', 'wp-content-locker'),
                 'saving' => __('Saving...', 'wp-content-locker'),
                 'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
@@ -347,6 +350,41 @@ class WCL_Account {
     }
 
     /**
+     * AJAX handler for resume subscription
+     */
+    public function ajax_resume_subscription() {
+        // Verify nonce
+        if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        // Check if user is logged in
+        if (!is_user_logged_in()) {
+            wp_send_json_error(array('message' => __('You must be logged in.', 'wp-content-locker')));
+        }
+
+        $user_id = get_current_user_id();
+
+        // Get canceling subscription
+        $subscription = WCL_Subscription::get_active_subscription($user_id);
+
+        if (!$subscription || $subscription->status !== 'canceling') {
+            wp_send_json_error(array('message' => __('No pending cancellation found to resume.', 'wp-content-locker')));
+        }
+
+        // Resume subscription
+        $result = WCL_Subscription::resume_subscription($subscription->id);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
+        }
+
+        wp_send_json_success(array(
+            'message' => __('Your subscription has been resumed.', 'wp-content-locker'),
+        ));
+    }
+
+    /**
      * Get subscription data for display
      */
     public static function get_subscription_display_data($user_id) {
@@ -434,6 +472,7 @@ class WCL_Account {
             'current_period_end' => $subscription->current_period_end,
             'current_period_end_formatted' => $subscription->current_period_end ? date_i18n(get_option('date_format'), strtotime($subscription->current_period_end)) : '',
             'can_cancel' => in_array($subscription->status, array('active')),
+            'can_resume' => in_array($subscription->status, array('canceling')),
             'payment_method' => $payment_method_info,
             'invoices' => $invoices,
         );
