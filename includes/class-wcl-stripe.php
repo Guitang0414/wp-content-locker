@@ -261,7 +261,7 @@ class WCL_Stripe {
             'consent_collection' => array(
                 'terms_of_service' => 'required',
             ),
-            'custom_text' => array(
+            'custom_text' => isset($params['custom_text']) ? $params['custom_text'] : array(
                 'terms_of_service_acceptance' => array(
                     'message' => 'I agree to the [Terms of Service](https://arizonainsiders.com/terms-of-service/)',
                 ),

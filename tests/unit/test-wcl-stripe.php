@@ -112,4 +112,52 @@ class TestWCLStripe extends TestCase {
         $result = $stripe->resume_subscription('sub_123');
         $this->assertFalse($result['cancel_at_period_end']);
     }
+    public function test_create_checkout_session_with_custom_text() {
+        $stripe = WCL_Stripe::get_instance();
+        
+        // Mock get_option calls
+        \WP_Mock::userFunction('get_option', array(
+            'return' => 'sk_test_123',
+        ));
+
+        // Mock wp_remote_request to verify custom text
+        \WP_Mock::userFunction('wp_remote_request', array(
+            'return' => array(
+                'body' => json_encode(array('id' => 'cs_test_custom')),
+                'response' => array('code' => 200)
+            ),
+            'args' => array(
+                'https://api.stripe.com/v1/checkout/sessions',
+                \Mockery::on(function($args) {
+                    if (!isset($args['method']) || $args['method'] !== 'POST') return false;
+                    $body = $args['body'];
+                    
+                    if (!isset($body['custom_text']['terms_of_service_acceptance']['message'])) return false;
+                    
+                    return $body['custom_text']['terms_of_service_acceptance']['message'] === 'My custom terms';
+                })
+            )
+        ));
+
+        \WP_Mock::userFunction('wp_remote_retrieve_body', array(
+            'return' => json_encode(array('id' => 'cs_test_custom'))
+        ));
+
+        \WP_Mock::userFunction('is_wp_error', array('return' => false));
+
+        $params = array(
+            'price_id' => 'price_123',
+            'success_url' => 'http://example.com/success',
+            'cancel_url' => 'http://example.com/cancel',
+            'custom_text' => array(
+                'terms_of_service_acceptance' => array(
+                    'message' => 'My custom terms',
+                )
+            )
+        );
+
+        $result = $stripe->create_checkout_session($params);
+        $this->assertEquals('cs_test_custom', $result['id']);
+    }
+
 }
