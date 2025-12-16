@@ -483,11 +483,7 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
     var wclData = <?php echo json_encode($wcl_data); ?>;
 
     jQuery(document).ready(function($) {
-        // Sync email inputs (optional, just to be nice)
-        $('.subscription-email').on('input', function() {
-            $('.subscription-email').val($(this).val());
-        });
-
+        
         $('.btn-subscribe').on('click', function(e) {
             e.preventDefault();
             var $btn = $(this);
