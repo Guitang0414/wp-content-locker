@@ -62,6 +62,7 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
 ?>
 
 <!-- Step 1: Simple Paywall CTA -->
+<!-- Debug: WCL 1.1.0 Verified -->
 <div class="wcl-paywall">
     <div class="wcl-paywall-brand">
         <?php echo esc_html($site_name); ?>
