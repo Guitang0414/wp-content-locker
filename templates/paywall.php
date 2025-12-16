@@ -71,7 +71,14 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
     <h3 class="wcl-paywall-title"><?php echo esc_html($title); ?></h3>
     <p class="wcl-paywall-description"><?php echo esc_html($description); ?></p>
 
-    <a href="<?php echo home_url('/subscribe/'); ?>" class="wcl-subscribe-btn">
+    <?php
+    $subscribe_url = home_url('/subscribe/');
+    // Pass test mode parameter if present
+    if (isset($_GET['wcl_test_mode'])) {
+        $subscribe_url = add_query_arg('wcl_test_mode', sanitize_text_field($_GET['wcl_test_mode']), $subscribe_url);
+    }
+    ?>
+    <a href="<?php echo esc_url($subscribe_url); ?>" class="wcl-subscribe-btn">
         <?php echo esc_html($button_text); ?>
     </a>
 
