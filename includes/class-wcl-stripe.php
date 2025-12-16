@@ -535,7 +535,7 @@ class WCL_Stripe {
                 // Get price details for email
                 $price_id = $subscription['items']['data'][0]['price']['id'];
                 
-                // Use actual amount paid from session if available, otherwise fall back to price
+                // Use actual amount paid from session if available
                 if (isset($session['amount_total']) && isset($session['currency'])) {
                     $currency = strtoupper($session['currency']);
                     $amount = $session['amount_total'] / 100;
@@ -551,6 +551,15 @@ class WCL_Stripe {
                     
                     $interval_text = ($interval === 'year') ? '/' . __('year', 'wp-content-locker') : '/' . __('month', 'wp-content-locker');
                     $amount_formatted = $symbol . number_format($amount, 2) . $interval_text;
+
+                    // Extract tax and subtotal details
+                    if (isset($session['total_details'])) {
+                        $amount_tax = isset($session['total_details']['amount_tax']) ? $session['total_details']['amount_tax'] / 100 : 0;
+                        $amount_subtotal = isset($session['total_details']['amount_subtotal']) ? $session['total_details']['amount_subtotal'] / 100 : $amount;
+                        
+                        $tax_formatted = $symbol . number_format($amount_tax, 2);
+                        $subtotal_formatted = $symbol . number_format($amount_subtotal, 2);
+                    }
                 } else {
                     $amount_formatted = $this->get_formatted_price($price_id);
                 }
@@ -599,7 +608,10 @@ class WCL_Stripe {
             'password' => is_array($user_result) ? $user_result['password'] : null,
             'new_user' => is_array($user_result) ? $user_result['new_user'] : false,
             'plan_name' => $plan_name,
+            'plan_type' => $plan_type, // Pass plan type for logic
             'amount' => $amount_formatted,
+            'tax' => isset($tax_formatted) ? $tax_formatted : '',
+            'subtotal' => isset($subtotal_formatted) ? $subtotal_formatted : '',
             'post_url' => $post_id ? get_permalink($post_id) : home_url(),
             'invoice_pdf' => $invoice_pdf
         );
