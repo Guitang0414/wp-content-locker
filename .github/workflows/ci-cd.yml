@@ -1,4 +1,5 @@
-name: Test Plugin
+
+name: CI/CD Pipeline
 
 on:
   push:
@@ -12,8 +13,8 @@ on:
 
 jobs:
   test:
+    name: Test Plugin
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,3 +44,28 @@ jobs:
 
       - name: Run Tests
         run: ./vendor/bin/phpunit
+
+  deploy:
+    name: Deploy to WordPress
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_PATH }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .github/**
+            .gitignore
+            README.md
