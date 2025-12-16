@@ -522,7 +522,7 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
 
         <div class="offer-wrapper">
             <span class="offer-label">Limited Time Offer</span>
-            <div class="offer-main-text">✨ Only <?php echo $monthly_discounted; ?>/week <br class="mobile-br"> for the first 3 months</div>
+            <div class="offer-main-text">✨ Only $1/week <br class="mobile-br"> for the first 3 months</div>
             <div class="offer-sub-text">Then $3/week. Cancel anytime.</div>
         </div>
     </div>
