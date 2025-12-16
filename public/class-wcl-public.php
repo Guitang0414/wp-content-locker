@@ -261,6 +261,17 @@ class WCL_Public {
                     );
                 }
             }
+        } elseif ($plan_type === 'yearly') {
+            // Auto-apply promo code for yearly plan
+            $promo_code = get_option('wcl_yearly_promo_code', 'NEWUSERY');
+            if (!empty($promo_code)) {
+                $promotion = $stripe->find_promotion_code($promo_code);
+                if ($promotion && !is_wp_error($promotion)) {
+                    $params['discounts'] = array(
+                        array('promotion_code' => $promotion['id']),
+                    );
+                }
+            }
         }
 
         $session = $stripe->create_checkout_session($params);
