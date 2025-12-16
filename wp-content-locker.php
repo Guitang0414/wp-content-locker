@@ -145,6 +145,11 @@ class WP_Content_Locker {
         // Checkout success handler
         add_action('template_redirect', array($public, 'handle_checkout_success'));
 
+        // Subscription page rewrite rules
+        add_action('init', array($public, 'add_rewrite_rules'));
+        add_filter('query_vars', array($public, 'register_query_vars'));
+        add_filter('template_include', array($public, 'subscription_page_template'));
+
         // Account page shortcode
         new WCL_Account();
     }

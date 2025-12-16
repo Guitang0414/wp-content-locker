@@ -16,7 +16,15 @@ class WCL_Activator {
         self::create_subscriber_role();
         self::create_database_tables();
         self::set_default_options();
+        self::add_rewrite_rules();
         flush_rewrite_rules();
+    }
+
+    /**
+     * Add rewrite rules during activation
+     */
+    private static function add_rewrite_rules() {
+        add_rewrite_rule('^subscribe/?$', 'index.php?wcl_subscription_page=1', 'top');
     }
 
     /**

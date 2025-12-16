@@ -491,12 +491,39 @@ class WCL_Public {
             }
         }
 
-        // Redirect to original post
         if ($post_id) {
             wp_redirect(add_query_arg('wcl_subscribed', '1', get_permalink($post_id)));
         } else {
             wp_redirect(home_url('?wcl_subscribed=1'));
         }
         exit;
+    }
+
+    /**
+     * Add rewrite rules (init hook)
+     */
+    public function add_rewrite_rules() {
+        add_rewrite_rule('^subscribe/?$', 'index.php?wcl_subscription_page=1', 'top');
+    }
+
+    /**
+     * Register query vars
+     */
+    public function register_query_vars($vars) {
+        $vars[] = 'wcl_subscription_page';
+        return $vars;
+    }
+
+    /**
+     * Load subscription page template
+     */
+    public function subscription_page_template($template) {
+        if (get_query_var('wcl_subscription_page')) {
+            $new_template = WCL_PLUGIN_DIR . 'templates/subscription-page.php';
+            if (file_exists($new_template)) {
+                return $new_template;
+            }
+        }
+        return $template;
     }
 }
