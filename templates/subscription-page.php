@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 
 // Get configurable values
 $monthly_original = get_option('wcl_monthly_original_price', '$2');
-$monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢');
+$monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢'); // Kept for reference but strictly using new design text
 $monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $12 per month');
 
 // Calculate yearly savings
@@ -65,7 +65,6 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
     $is_test_mode = true;
     $wcl_data['isTestMode'] = true;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -73,306 +72,287 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscribe - <?php echo get_bloginfo('name'); ?></title>
+    <!-- Debug: WCL 1.2.0 New Design -->
 
-    <meta name="description" content="Subscribe to <?php echo get_bloginfo('name'); ?>. Limited time offer.">
-    
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <!-- Using Google Fonts matching the design -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Use jQuery from WP if possible, or CDN fall back if we are standalone -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <style>
-        /* ============================ */
-        /* 1. 全局与电脑端样式 (Base)   */
-        /* ============================ */
         :root {
-            --theme-black: #111;
-            --theme-blue: #0274b6;
+            --theme-black: #000;
+            --theme-dark: #333;
             --theme-gray: #555;
-            --theme-border: #ddd;
-            --font-serif: 'Georgia', 'Times New Roman', serif;
-            --font-sans: 'Retina', 'Arial', -apple-system, sans-serif;
+            --theme-border: #ccc;
+            --font-headline: 'Playfair Display', Georgia, serif;
+            --font-ui: 'Libre Franklin', Arial, sans-serif;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: var(--font-sans);
+            font-family: var(--font-ui);
             color: var(--theme-black);
             background-color: #fff;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 电脑端隐藏“手机专用换行符” */
-        .mobile-br { display: none; }
-
+        /* --- Header --- */
         header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             padding: 20px 40px;
-            border-bottom: 1px solid var(--theme-border);
+            border-bottom: 1px solid #e2e2e2;
+            position: relative;
         }
 
-        .header-spacer { width: 80px; } 
-
         .logo {
-            font-family: var(--font-serif);
+            font-family: var(--font-headline);
             font-size: 32px;
             font-weight: 900;
             color: var(--theme-black);
             text-transform: uppercase;
-            letter-spacing: -0.5px;
             text-decoration: none;
-            cursor: pointer;
+            letter-spacing: -0.5px;
         }
 
         .sign-in {
+            position: absolute;
+            right: 40px;
             font-size: 13px;
-            font-weight: bold;
-            color: var(--theme-blue);
+            font-weight: 700;
+            color: #0274b6;
             text-decoration: none;
-            width: 80px;
-            text-align: right;
         }
         .sign-in:hover { text-decoration: underline; }
 
-        /* Hero 区域 */
+        /* --- Hero 区域 --- */
         .hero {
             text-align: center;
-            padding: 50px 20px 40px;
-            max-width: 1000px; 
+            padding: 30px 20px 0;
+            max-width: 900px;
             margin: 0 auto;
         }
 
-        .hero h1 {
-            font-family: var(--font-serif);
-            font-size: 36px;
-            margin: 0 0 15px 0;
-            line-height: 1.2;
-            white-space: nowrap; 
-        }
-
-        /* Offer 区域 */
-        .offer-wrapper {
-            margin-top: 10px;
-            padding-top: 0;   
-            border-top: none;
-            border-bottom: 1px solid var(--theme-border);
-            padding-bottom: 30px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
+        /* Limited Time Offer */
         .offer-label {
-            display: inline-block;
-            font-family: var(--font-serif); 
-            font-style: italic;             
+            font-family: var(--font-ui);
             font-size: 13px;
             font-weight: 700;
-            letter-spacing: 1px;
-            color: #d93900; 
             text-transform: uppercase;
-            margin-bottom: 8px;
+            letter-spacing: 1px;
+            color: #d93900;
+            margin-bottom: 10px;
         }
 
-        .offer-main-text {
-            font-family: var(--font-serif);
-            font-size: 28px;
-            font-weight: bold;
+        /* 大标题 */
+        .hero h1 {
+            font-family: var(--font-headline);
+            font-size: 36px;
+            font-weight: 700;
+            margin: 0 0 25px 0;
             color: var(--theme-black);
-            margin: 5px 0;
+            line-height: 1.2;
         }
 
-        .offer-sub-text {
-            font-size: 15px;
-            color: var(--theme-gray);
-            margin-top: 5px;
+        /* 分割线 */
+        .separator {
+            width: 100%;
+            max-width: 800px;
+            height: 1px;
+            background-color: #e2e2e2;
+            margin: 0 auto 30px;
         }
 
-        /* 订阅卡片布局 */
+        /* Choose your Subscription - 不大写，不加粗 */
+        .sub-headline {
+            font-family: var(--font-ui);
+            font-size: 20px;
+            color: var(--theme-black);
+            font-weight: 400;
+            margin-bottom: 25px;
+            text-transform: none; /* 强制取消大写 */
+            letter-spacing: 0;
+        }
+
+        /* --- 订阅卡片区 --- */
         .container {
-            max-width: 1000px; 
+            max-width: 960px;
             margin: 0 auto;
-            padding: 40px 20px 80px;
+            padding: 0 20px 80px;
         }
 
         .pricing-grid {
             display: flex;
             justify-content: center;
-            gap: 25px; 
+            gap: 25px;
             align-items: stretch;
         }
 
         .card {
             flex: 1;
-            max-width: 420px; 
+            max-width: 400px;
             border: 1px solid var(--theme-border);
-            padding: 0;
-            position: relative;
+            border-radius: 12px;
+            padding: 35px 30px;
             background: #fff;
             display: flex;
             flex-direction: column;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border-radius: 12px; 
-            overflow: hidden; 
-        }
-
-        .card.selected {
-            border-color: var(--theme-blue);
-            box-shadow: 0 0 0 1px var(--theme-blue);
+            text-align: center;
+            transition: all 0.2s ease;
+            position: relative; /* For loader positioning */
         }
 
         .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            border-color: var(--theme-blue);
-            z-index: 2;
-        }
-
-        .badge {
-            background-color: var(--theme-black);
-            color: #fff;
-            text-align: center;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            padding: 8px 0;
-            text-transform: uppercase;
-        }
-
-        .card-header {
-            padding: 35px 35px 10px 35px;
-            text-align: center;
+            border-color: var(--theme-black);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
 
         .plan-title {
-            font-family: var(--font-sans);
-            font-size: 16px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 15px;
-            color: var(--theme-gray);
-        }
-
-        .price-wrapper { min-height: 80px; }
-
-        .old-price {
-            text-decoration: line-through;
-            color: #999;
-            font-size: 15px;
-        }
-
-        .current-price {
-            font-family: var(--font-serif);
-            font-size: 44px;
-            font-weight: 700;
-            color: var(--theme-black);
-            line-height: 1.1;
-            margin: 5px 0;
-        }
-
-        .period {
-            font-size: 16px;
-            font-weight: 400;
-            color: var(--theme-gray);
-            font-family: var(--font-sans);
-        }
-
-        .billing-text {
-            font-size: 13px;
-            color: #d93900;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-
-        .card-body {
-            padding: 20px 35px 45px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .btn-select {
-            display: block;
-            width: 100%;
-            padding: 18px 0;
-            text-align: center;
-            background-color: var(--theme-blue);
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 25px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-select:hover { background-color: #005a8f; }
-        .btn-select:disabled { background-color: #ccc; cursor: not-allowed; }
-
-        .secure-note {
-            text-align: center; 
-            font-size: 11px; 
-            color: #888; 
-            margin-top: -15px; 
-            margin-bottom: 25px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 4px;
-        }
-
-        /* --- 功能列表 (What You Get) --- */
-        .features {
-            border-top: 1px solid #eee;
-            padding-top: 25px;
-        }
-        
-        .features-title {
+            font-family: var(--font-ui);
             font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 15px;
-            color: var(--theme-black);
-            display: block;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
         }
 
-        /* 列表样式 */
+        .plan-name {
+            font-family: var(--font-headline);
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 20px 0;
+            line-height: 1.1;
+        }
+
+        /* 价格区域 */
+        .price-wrapper {
+            margin-bottom: 20px;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .old-price {
+            font-family: var(--font-headline);
+            font-size: 26px;
+            text-decoration: line-through;
+            color: #888;
+            margin-bottom: 5px;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+
+        .current-price {
+            font-family: var(--font-headline);
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--theme-black);
+            margin: 5px 0;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .billing-text {
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: #000; 
+            font-weight: 400;
+            margin-top: 5px;
+        }
+
+        /* 上标样式调整，防止撑开行高 */
+        sup {
+            font-size: 0.6em;
+            vertical-align: top;
+            position: relative;
+            top: -0.2em;
+        }
+
+        /* 按钮 */
+        .btn-subscribe {
+            display: block;
+            width: 100%;
+            padding: 14px 0;
+            background-color: var(--theme-black);
+            color: #fff;
+            text-decoration: none;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            font-size: 15px;
+            border-radius: 30px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-subscribe:hover {
+            background-color: #333;
+        }
+        
+        .btn-subscribe:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .cancel-text {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* 功能列表 - 不大写 */
+        .features-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: none; /* 确保不大写 */
+            color: var(--theme-black);
+        }
+
         .features-list {
             list-style: none;
             padding: 0;
             margin: 0;
-            display: block; /* 始终显示 */
+            text-align: left;
         }
 
         .features-list li {
-            font-size: 15px; 
-            margin-bottom: 12px;
-            padding-left: 26px;
-            position: relative;
-            line-height: 1.5;
+            font-size: 14px;
+            margin-bottom: 10px;
+            padding-left: 0;
+            line-height: 1.4;
             color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
         }
 
-        .features-list li::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 5px;
-            width: 12px;
-            height: 8px;
-            border-bottom: 2px solid var(--theme-blue);
-            border-left: 2px solid var(--theme-blue);
-            transform: rotate(-45deg);
+        /* 对号图标 - 再次放大至 32px */
+        .check-icon {
+            flex-shrink: 0;
+            width: 32px;   /* 更大 */
+            height: 32px;  /* 更大 */
+            margin-left: 10px;
+            fill: none;
+            stroke: var(--theme-black);
+            stroke-width: 1.2; /* 稍微细一点，显精致 */
+            margin-top: -6px; /* 微调垂直对齐，因为图标变大了 */
         }
-
-        /* Email Input */
-        .email-section {
-            margin-bottom: 15px;
-        }
+        
+        /* Email Input Integration */
         .email-input {
             width: 100%;
             padding: 12px;
@@ -382,133 +362,28 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
             box-sizing: border-box;
             margin-bottom: 10px;
         }
-
+        
         .error-message {
             color: #d93900;
             font-size: 13px;
-            text-align: center;
             margin-top: 10px;
             display: none;
         }
-        
-        /* 法律/页脚 */
-        .legal-text {
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-            margin-top: 50px;
-            line-height: 1.5;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
 
-        footer {
-            background-color: #f8f8f8;
-            padding: 50px 20px;
-            text-align: center;
-            border-top: 1px solid var(--theme-border);
-            font-size: 12px;
-            color: #666;
-        }
-
-        footer a {
-            color: #666;
-            margin: 0 12px;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        footer a:hover {
-            color: var(--theme-black);
-            text-decoration: underline;
-        }
-
-        .btn-contact {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 8px 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            color: #555 !important;
-            background-color: #fff;
-            font-weight: bold;
-            text-decoration: none !important;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .need-help-text {
-            margin-bottom: 5px;
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--theme-black);
-        }
-
-        /* ============================ */
-        /* 2. 手机端适配 (Mobile Only)  */
-        /* ============================ */
         @media (max-width: 768px) {
-            
-            /* 1. Header: 隐藏 Sign In */
             header { padding: 15px 20px; }
-            .sign-in { display: none !important; } /* 彻底隐藏 */
-            .logo {
-                font-size: 20px;
-                white-space: nowrap; 
-                letter-spacing: -0.2px;
-                margin: 0 auto; /* 居中 */
-            }
-            .header-spacer { display: none; }
-
-            /* 2. Hero: 调整间距，显示换行 */
-            .hero { padding: 25px 20px 10px; }
-            .mobile-br { display: block; } /* 开启手机换行 */
-            
-            /* 标题：强制三行 + 小字体 */
-            .hero h1 { 
-                white-space: normal; 
-                font-size: 22px; /* 字体缩小至 22px */
-                line-height: 1.4;
-                margin-bottom: 15px;
-                font-weight: 700;
-            }
-
-            /* Offer 文本 */
-            .offer-main-text { 
-                font-size: 20px; 
-                line-height: 1.3; 
-                margin: 5px 0;
-            }
-            .offer-main-text .mobile-br { display: inline; }
-
-            /* 3. 卡片布局 */
-            .container { padding-top: 10px; }
-            .pricing-grid { 
-                flex-direction: column; 
-                align-items: center; 
-                gap: 20px; 
-            }
-            .card { width: 100%; max-width: 420px; }
-
-            /* 4. 列表样式: 手机端也直接展开，不折叠 */
-            .features-title {
-                text-align: center; /* 标题居中 */
-                padding-bottom: 10px;
-                border-bottom: 1px dashed #eee;
-            }
-            .features-list {
-                display: block !important; /* 强制显示 */
-                padding-top: 15px;
-            }
+            .sign-in { display: none; }
+            .pricing-grid { flex-direction: column; align-items: center; gap: 30px; }
+            .card { width: 100%; max-width: 420px; padding: 30px 20px; }
+            .hero h1 { font-size: 28px; }
+            .logo { font-size: 24px; }
+            .current-price { white-space: normal; line-height: 1.3; }
         }
     </style>
-    <!-- Use jQuery from WP if possible, or CDN fall back if we are standalone -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
     <header>
-        <div class="header-spacer"></div>
         <a href="<?php echo home_url(); ?>" class="logo"><?php echo get_bloginfo('name'); ?></a>
         <?php if (!$is_logged_in): ?>
         <a href="<?php echo esc_url(wp_login_url()); ?>" class="sign-in">Sign In</a>
@@ -518,13 +393,12 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
     </header>
 
     <div class="hero">
-        <h1>Independent News <br class="mobile-br"> for <br class="mobile-br"> Independent Thinkers</h1>
+        <div class="offer-label">Limited Time Offer</div>
+        <h1>✨ Only $1/week for the first 3 months</h1>
+        
+        <div class="separator"></div>
 
-        <div class="offer-wrapper">
-            <span class="offer-label">Limited Time Offer</span>
-            <div class="offer-main-text">✨ Only $1/week <br class="mobile-br"> for the first 3 months</div>
-            <div class="offer-sub-text">Then $3/week. Cancel anytime.</div>
-        </div>
+        <div class="sub-headline">Choose your Subscription</div>
     </div>
 
     <div class="container">
@@ -532,115 +406,89 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
             
             <!-- Monthly Card -->
             <div class="card" data-plan="monthly">
-                <div style="height: 32px;"></div> 
-                <div class="card-header">
-                    <div class="plan-title">Monthly Subscription</div>
-                    <div class="price-wrapper">
-                        <div class="old-price">$12/month</div>
-                        <div class="current-price"><?php echo $monthly_price_display; ?><span class="period">/mo</span></div>
-                        <div class="billing-text">Billed every month</div>
-                    </div>
+                <div class="plan-title">Monthly Access</div>
+                <div class="plan-name">Monthly Subscription</div>
+                
+                <div class="price-wrapper">
+                    <div class="old-price">$12/month</div>
+                    <div class="current-price">$4/month for 3 months</div>
+                    <div class="billing-text">$12/month from the 4<sup>th</sup> month</div>
                 </div>
 
-                <div class="card-body">
-                    <?php if (!$is_logged_in): ?>
-                    <input type="email" class="email-input subscription-email" placeholder="Enter your email" required />
-                    <?php endif; ?>
-                    
-                    <button class="btn-select subscribe-btn" data-plan="monthly">Subscribe Monthly</button>
-                    
-                    <div class="error-message"></div>
+                <?php if (!$is_logged_in): ?>
+                <input type="email" class="email-input subscription-email" placeholder="Enter your email" required />
+                <?php endif; ?>
 
-                    <div class="secure-note">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        Secure Checkout
-                    </div>
-                    
-                    <div class="features">
-                        <div class="features-title">What You Get</div>
-                        <ul class="features-list">
-                            <li>Unlimited access to all articles</li>
-                            <li>Independent, agenda-free reporting</li>
-                            <li>Fearless investigations on CCP influence</li>
-                            <li>24/7 news updates</li>
-                            <li>Weekly Insider newsletter</li>
-                        </ul>
-                    </div>
+                <button class="btn-subscribe" data-plan="monthly">Subscribe Now</button>
+                <div class="error-message"></div>
+                
+                <div class="cancel-text">You can cancel anytime.</div>
+
+                <div class="features">
+                    <div class="features-title">What you'll enjoy:</div>
+                    <ul class="features-list">
+                        <li>Unlimited access to ArizonaInsiders.com <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                        <li>Independent, agenda-free reporting <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                        <li>24/7 news updates <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                        <li>Weekly Insider newsletter <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                    </ul>
                 </div>
             </div>
 
             <!-- Yearly Card -->
-            <div class="card" data-plan="yearly" style="border-top: 4px solid var(--theme-black); border-color: var(--theme-black);">
-                <div class="badge">Best Value</div>
-                
-                <div class="card-header">
-                    <div class="plan-title">Yearly Subscription</div>
-                    <div class="price-wrapper">
-                        <div class="old-price"><?php echo $yearly_original_str; ?>/year</div>
-                        <div class="current-price"><?php echo $yearly_price_display; ?><span class="period">/yr</span></div>
-                        <div class="billing-text">Save $20 instantly</div>
-                    </div>
+            <div class="card" data-plan="yearly">
+                <div class="plan-title">Best Value</div>
+                <div class="plan-name">Yearly Subscription</div>
+
+                <div class="price-wrapper">
+                    <?php if (!empty($yearly_original_str)) : ?>
+                    <div class="old-price"><?php echo $yearly_original_str; ?>/year</div>
+                    <?php endif; ?>
+                    <div class="current-price"><?php echo $yearly_price_display; ?>/year for 1 year</div>
+                    <div class="billing-text">$159/year from the 2<sup>nd</sup> year</div>
                 </div>
 
-                <div class="card-body">
-                    <?php if (!$is_logged_in): ?>
-                    <input type="email" class="email-input subscription-email" placeholder="Enter your email" required />
-                    <?php endif; ?>
+                <?php if (!$is_logged_in): ?>
+                <input type="email" class="email-input subscription-email" placeholder="Enter your email" required />
+                <?php endif; ?>
 
-                    <button class="btn-select subscribe-btn" data-plan="yearly">Subscribe Yearly</button>
-                    
-                    <div class="error-message"></div>
+                <button class="btn-subscribe" data-plan="yearly">Subscribe Now</button>
+                <div class="error-message"></div>
+                
+                <div class="cancel-text">You can cancel anytime.</div>
 
-                    <div class="secure-note">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        Secure Checkout
-                    </div>
-                    
-                    <div class="features">
-                        <div class="features-title">What You Get</div>
-                        <ul class="features-list">
-                            <li>Unlimited access to all articles</li>
-                            <li>Independent, agenda-free reporting</li>
-                            <li>Fearless investigations on CCP influence</li>
-                            <li>24/7 news updates</li>
-                            <li>Weekly Insider newsletter</li>
-                        </ul>
-                    </div>
+                <div class="features">
+                    <div class="features-title">What you'll enjoy:</div>
+                    <ul class="features-list">
+                        <li>Unlimited access to ArizonaInsiders.com <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                        <li>Independent, agenda-free reporting <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                        <li>24/7 news updates <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                        <li>Weekly Insider newsletter <svg class="check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></li>
+                    </ul>
                 </div>
             </div>
 
         </div>
-
-        <div class="legal-text">
-            <p><strong>Automatic Renewal:</strong> Your monthly subscription will automatically renew at the standard rate (currently <?php echo $monthly_price_display; ?>/mo + tax) after first 3 months unless you cancel. You may cancel at any time in your account settings. Sales tax may apply.</p>
-        </div>
     </div>
 
-    <footer>
-        <p style="margin-bottom: 20px;">
-            <a href="https://arizonainsiders.com/data-protection-privacy-policy/">Privacy Policy</a> | 
-            <a href="https://arizonainsiders.com/terms-of-service/">Terms of Service</a>
+    <footer style="text-align:center; padding: 40px 20px; font-size: 12px; color: #888; border-top: 1px solid #eee;">
+        <p style="margin-bottom: 10px;">
+            <a href="https://arizonainsiders.com/data-protection-privacy-policy/" style="color:#666; text-decoration:none; margin: 0 10px;">Privacy Policy</a>
+            <a href="https://arizonainsiders.com/terms-of-service/" style="color:#666; text-decoration:none; margin: 0 10px;">Terms of Service</a>
         </p>
-        
         <p>&copy; <?php echo date('Y'); ?> Arizona Insiders. All Rights Reserved.</p>
-        
-        <div style="margin-top: 25px;">
-            <div class="need-help-text">Need help?</div>
-            <a href="https://arizonainsiders.com/feedback-form/" class="btn-contact">Contact Us</a>
-        </div>
     </footer>
 
     <script type="text/javascript">
     var wclData = <?php echo json_encode($wcl_data); ?>;
 
     jQuery(document).ready(function($) {
-        
         // Sync email inputs (optional, just to be nice)
         $('.subscription-email').on('input', function() {
             $('.subscription-email').val($(this).val());
         });
 
-        $('.subscribe-btn').on('click', function(e) {
+        $('.btn-subscribe').on('click', function(e) {
             e.preventDefault();
             var $btn = $(this);
             var plan = $btn.data('plan');
@@ -650,8 +498,7 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
 
             // Get email if not logged in
             if (!wclData.isLoggedIn) {
-                // Get the email from the input inside *this* card or just the global one
-                // Since we synced them, value should be same.
+                // Get the email from the input inside *this* card
                 email = $card.find('.subscription-email').val();
                 
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -670,7 +517,7 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
                     action: 'wcl_create_checkout',
                     nonce: wclData.nonce,
                     plan_type: plan,
-                    post_id: wclData.postId, // might be 0
+                    post_id: wclData.postId,
                     email: email,
                     test_mode: wclData.isTestMode ? 1 : 0
                 },
@@ -680,12 +527,12 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
                     } else {
                         var msg = response.data && response.data.message ? response.data.message : wclData.strings.error;
                         $error.text(msg).show();
-                        $btn.prop('disabled', false).text(plan === 'monthly' ? 'Subscribe Monthly' : 'Subscribe Yearly');
+                        $btn.prop('disabled', false).text('Subscribe Now');
                     }
                 },
                 error: function(xhr, status, error) {
                     $error.text(wclData.strings.error).show();
-                    $btn.prop('disabled', false).text(plan === 'monthly' ? 'Subscribe Monthly' : 'Subscribe Yearly');
+                    $btn.prop('disabled', false).text('Subscribe Now');
                 }
             });
         });
