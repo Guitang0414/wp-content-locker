@@ -242,7 +242,7 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
         }
 
         .old-price {
-            font-family: var(--font-headline);
+            font-family: var(--font-ui);
             font-size: 26px;
             text-decoration: line-through;
             color: #888;
@@ -252,7 +252,7 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
         }
 
         .current-price {
-            font-family: var(--font-headline);
+            font-family: var(--font-ui);
             font-size: 26px;
             font-weight: 700;
             color: var(--theme-black);
