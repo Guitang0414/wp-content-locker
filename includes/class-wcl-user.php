@@ -277,6 +277,7 @@ class WCL_User {
 
     /**
      * Auto-login user after subscription
+     * SECURITY: Only allow auto-login for subscribers to prevent privilege escalation
      */
     public static function auto_login($user_id) {
         if (is_user_logged_in()) {
@@ -285,6 +286,12 @@ class WCL_User {
 
         $user = get_user_by('id', $user_id);
         if (!$user) {
+            return;
+        }
+
+        // Security check: Do not auto-login administrators or other high-privilege users
+        $disallowed_roles = array('administrator', 'editor', 'author', 'contributor');
+        if (array_intersect($disallowed_roles, (array) $user->roles)) {
             return;
         }
 

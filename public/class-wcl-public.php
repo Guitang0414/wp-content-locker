@@ -18,8 +18,8 @@ class WCL_Public {
             return $content;
         }
 
-        // Don't apply in admin or REST API
-        if (is_admin() || defined('REST_REQUEST')) {
+        // Don't apply in admin
+        if (is_admin()) {
             return $content;
         }
 
