@@ -87,10 +87,12 @@ $login_url = !empty($account_page_url) ? add_query_arg('redirect_to', get_permal
         <?php echo esc_html($button_text); ?>
     </a>
 
+    <?php if (!is_user_logged_in()) : ?>
     <p class="wcl-login-link">
         <?php _e('Already a subscriber?', 'wp-content-locker'); ?>
         <a href="<?php echo esc_url($login_url); ?>"><?php _e('Sign In', 'wp-content-locker'); ?></a>
     </p>
+    <?php endif; ?>
 </div>
 
 
