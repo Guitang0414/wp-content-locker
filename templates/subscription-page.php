@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 // Get configurable values
 $monthly_original = get_option('wcl_monthly_original_price', '$2');
 $monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢'); // Kept for reference but strictly using new design text
-$monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $12 per month');
+$monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $15 per month');
 
 // Calculate yearly savings
 $yearly_original_str = get_option('wcl_yearly_original_price', '');

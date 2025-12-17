@@ -141,7 +141,7 @@ class WCL_User {
         $renewal_text .= '<br>' . __('Your payment method will then be automatically charged the standard rate of <strong>$159.00 every year</strong> thereafter.', 'wp-content-locker');
     } else {
         $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s every month for the first 3 months</strong>.', 'wp-content-locker'), $data['amount']);
-        $renewal_text .= '<br>' . __('Your payment method will then be automatically charged the standard rate of <strong>$12.00 every month</strong> thereafter.', 'wp-content-locker');
+        $renewal_text .= '<br>' . __('Your payment method will then be automatically charged the standard rate of <strong>$15.00 every month</strong> thereafter.', 'wp-content-locker');
     }
 
     $message = '
