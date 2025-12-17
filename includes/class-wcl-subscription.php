@@ -166,8 +166,11 @@ class WCL_Subscription {
 
         $sql = "SELECT COUNT(*) FROM " . self::get_table_name() . "
              WHERE user_id = %d
-             AND status IN ('active', 'canceling')
-             AND (current_period_end IS NULL OR current_period_end > NOW())";
+             AND (
+                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > NOW()))
+                 OR
+                 (status = 'canceled' AND current_period_end > NOW())
+             )";
         
         $params = array($user_id);
 
@@ -189,8 +192,11 @@ class WCL_Subscription {
 
         $sql = "SELECT * FROM " . self::get_table_name() . "
              WHERE user_id = %d
-             AND status IN ('active', 'canceling')
-             AND (current_period_end IS NULL OR current_period_end > NOW())";
+             AND (
+                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > NOW()))
+                 OR
+                 (status = 'canceled' AND current_period_end > NOW())
+             )";
         
         $params = array($user_id);
 
