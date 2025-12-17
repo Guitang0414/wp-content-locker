@@ -77,6 +77,11 @@ $login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_pe
     if (isset($_GET['wcl_test_mode'])) {
         $subscribe_url = add_query_arg('wcl_test_mode', sanitize_text_field($_GET['wcl_test_mode']), $subscribe_url);
     }
+    
+    // Pass post_id parameter for redirect
+    if (isset($post_id) && !empty($post_id)) {
+        $subscribe_url = add_query_arg('post_id', $post_id, $subscribe_url);
+    }
     ?>
     <a href="<?php echo esc_url($subscribe_url); ?>" class="wcl-subscribe-btn">
         <?php echo esc_html($button_text); ?>

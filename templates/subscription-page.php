@@ -47,12 +47,16 @@ $current_user = wp_get_current_user();
 $is_logged_in = is_user_logged_in();
 $user_email = $is_logged_in ? $current_user->user_email : '';
 
+// Check for post_id in URL
+$post_id_from_url = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
+
 // Data for JS
 $wcl_data = array(
     'ajaxUrl' => admin_url('admin-ajax.php'),
     'nonce' => wp_create_nonce('wcl_checkout_nonce'),
-    'postId' => 0, // General subscription
+    'postId' => $post_id_from_url,
     'isLoggedIn' => $is_logged_in,
+    'isTestMode' => (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] === '1' || $_GET['wcl_test_mode'] === 'wcl_test_secret')),
     'strings' => array(
         'invalidEmail' => __('Please enter a valid email address.', 'wp-content-locker'),
         'error' => __('An error occurred. Please try again.', 'wp-content-locker'),
