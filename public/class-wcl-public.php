@@ -117,6 +117,12 @@ class WCL_Public {
             ),
         );
 
+        // Add user email if logged in
+        if (is_user_logged_in()) {
+            $current_user = wp_get_current_user();
+            $data['userEmail'] = $current_user->user_email;
+        }
+
         echo '<script type="text/javascript">
         var wclData = ' . json_encode($data) . ';
         </script>';
@@ -446,6 +452,8 @@ class WCL_Public {
             if (!is_wp_error($user_result)) {
                 $user_id = is_array($user_result) ? $user_result['user_id'] : $user_result;
 
+                $is_new_user = is_array($user_result) && isset($user_result['new_user']) && $user_result['new_user'];
+
                 // Auto-login the user
                 WCL_User::auto_login($user_id);
 
@@ -494,10 +502,15 @@ class WCL_Public {
             }
         }
 
+        $redirect_args = array('wcl_subscribed' => '1');
+        if (isset($is_new_user) && $is_new_user) {
+            $redirect_args['wcl_new_user'] = '1';
+        }
+
         if ($post_id) {
-            wp_redirect(add_query_arg('wcl_subscribed', '1', get_permalink($post_id)));
+            wp_redirect(add_query_arg($redirect_args, get_permalink($post_id)));
         } else {
-            wp_redirect(home_url('?wcl_subscribed=1'));
+            wp_redirect(add_query_arg($redirect_args, home_url()));
         }
         exit;
     }
