@@ -236,6 +236,7 @@ class WCL_User {
         </html>';
 
         $headers = array('Content-Type: text/html; charset=UTF-8');
+        $headers[] = 'From: ' . $site_name . ' <' . get_option('admin_email') . '>';
         
         return wp_mail($user->user_email, $subject, $message, $headers);
     }
