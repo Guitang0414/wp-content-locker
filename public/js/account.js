@@ -1,8 +1,33 @@
 jQuery(document).ready(function ($) {
     console.log('WCL Account Script Loaded');
+
+    // Helper to parse URL params
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Check for tab parameter
+    var initialTab = getUrlParameter('tab');
+    if (initialTab && $('#wcl-tab-' + initialTab).length) {
+        $('.wcl-nav-item').removeClass('active');
+        $('.wcl-nav-item[data-tab="' + initialTab + '"]').addClass('active');
+
+        $('.wcl-tab-content').removeClass('active');
+        $('#wcl-tab-' + initialTab).addClass('active');
+    }
+
     // Tab Switching
     $('.wcl-nav-item').click(function () {
         var tab = $(this).data('tab');
+
+        // Update URL without reloading
+        if (history.pushState) {
+            var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?tab=' + tab;
+            window.history.pushState({ path: newurl }, '', newurl);
+        }
 
         $('.wcl-nav-item').removeClass('active');
         $(this).addClass('active');
@@ -88,10 +113,15 @@ jQuery(document).ready(function ($) {
             nonce: wclAccount.nonce,
             username: form.find('input[name="username"]').val(),
             password: form.find('input[name="password"]').val(),
-            remember: form.find('input[name="remember"]').is(':checked')
+            remember: form.find('input[name="remember"]').is(':checked'),
+            redirect_to: form.find('input[name="redirect_to"]').val()
         }, function (response) {
             if (response.success) {
-                location.reload();
+                if (response.data.redirect) {
+                    window.location.href = response.data.redirect;
+                } else {
+                    location.reload();
+                }
             } else {
                 btn.prop('disabled', false).text('Login');
                 msg.addClass('error').text(response.data.message).show();

@@ -21,6 +21,9 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                 <div class="wcl-message error" style="display: none;"></div>
                 
                 <form class="wcl-login-form" method="post">
+                    <?php if (isset($_GET['redirect_to'])): ?>
+                        <input type="hidden" name="redirect_to" value="<?php echo esc_attr($_GET['redirect_to']); ?>" />
+                    <?php endif; ?>
                     <div class="wcl-form-field">
                         <label for="wcl_username"><?php _e('Username or Email', 'wp-content-locker'); ?></label>
                         <input type="text" id="wcl_username" name="username" required />
@@ -119,7 +122,7 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                     <li class="wcl-nav-item" data-tab="password"><?php _e('Password', 'wp-content-locker'); ?></li>
                     <li class="wcl-nav-item" data-tab="subscription"><?php _e('Subscription', 'wp-content-locker'); ?></li>
                     <li class="wcl-nav-item" data-tab="billing"><?php _e('Billing History', 'wp-content-locker'); ?></li>
-                    <li class="wcl-nav-item" data-tab="newsletters"><?php _e('Newsletters', 'wp-content-locker'); ?></li>
+
                 </ul>
 
                 <a href="<?php echo esc_url(wp_logout_url(get_permalink())); ?>" class="wcl-logout-btn">
@@ -251,19 +254,7 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                     <?php endif; ?>
                 </div>
 
-                <!-- Newsletters Tab -->
-                <div id="wcl-tab-newsletters" class="wcl-tab-content">
-                    <h2 class="wcl-section-title"><?php _e('Newsletters', 'wp-content-locker'); ?></h2>
-                    <div style="padding: 20px; background: #f9f9f9; border-radius: 5px;">
-                        <label style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" checked disabled style="margin-right: 10px;">
-                            <span>
-                                <strong><?php _e('Daily Briefing', 'wp-content-locker'); ?></strong><br>
-                                <span style="color: #666; font-size: 14px;"><?php _e('Get the latest news delivered to your inbox every morning.', 'wp-content-locker'); ?></span>
-                            </span>
-                        </label>
-                    </div>
-                </div>
+
 
             </div>
         </div>

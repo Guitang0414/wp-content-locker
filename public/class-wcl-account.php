@@ -90,6 +90,7 @@ class WCL_Account {
         $username = isset($_POST['username']) ? sanitize_text_field($_POST['username']) : '';
         $password = isset($_POST['password']) ? $_POST['password'] : '';
         $remember = isset($_POST['remember']) && $_POST['remember'] === 'true';
+        $redirect_to = isset($_POST['redirect_to']) ? esc_url_raw($_POST['redirect_to']) : '';
 
         if (empty($username) || empty($password)) {
             wp_send_json_error(array('message' => __('Please enter username and password.', 'wp-content-locker')));
@@ -108,7 +109,7 @@ class WCL_Account {
 
         wp_send_json_success(array(
             'message' => __('Login successful!', 'wp-content-locker'),
-            'redirect' => '',
+            'redirect' => $redirect_to,
         ));
     }
 

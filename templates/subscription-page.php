@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Get configurable values
-$monthly_original = get_option('wcl_monthly_original_price', '$2');
+$monthly_original = get_option('wcl_monthly_original_price', '$15');
 $monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢'); // Kept for reference but strictly using new design text
 $monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $15 per month');
 
@@ -414,9 +414,9 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
                 <div class="plan-name">Monthly Subscription</div>
                 
                 <div class="price-wrapper">
-                    <div class="old-price">$12/month</div>
+                    <div class="old-price"><?php echo $monthly_original; ?>/month</div>
                     <div class="current-price">$4/month for 3 months</div>
-                    <div class="billing-text">$12/month from the 4<sup>th</sup> month</div>
+                    <div class="billing-text"><?php echo $monthly_original; ?>/month from the 4<sup>th</sup> month</div>
                 </div>
 
                 <?php if (!$is_logged_in): ?>

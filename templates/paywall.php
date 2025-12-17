@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Get configurable values
-$monthly_original = get_option('wcl_monthly_original_price', '$2');
+$monthly_original = get_option('wcl_monthly_original_price', '$15');
 $monthly_discounted = get_option('wcl_monthly_discounted_price', '50¢');
 $monthly_desc = get_option('wcl_monthly_description', 'every week for first 3 months,<br>then $8.99 per month');
 
@@ -58,7 +58,7 @@ if ($account_page_id) {
     $account_page_url = get_permalink($account_page_id);
 }
 
-$login_url = !empty($account_page_url) ? $account_page_url : wp_login_url(get_permalink($post_id));
+$login_url = !empty($account_page_url) ? add_query_arg('redirect_to', get_permalink($post_id), $account_page_url) : wp_login_url(get_permalink($post_id));
 ?>
 
 <!-- Step 1: Simple Paywall CTA -->

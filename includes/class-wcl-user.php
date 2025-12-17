@@ -136,17 +136,16 @@ class WCL_User {
     
     // Generate renewal text logic
     $renewal_text = '';
-    
-    // Get standard rates from settings with fallbacks
-    $monthly_std_price = get_option('wcl_monthly_price', '15.00');
-    $yearly_std_price = get_option('wcl_yearly_price', '159.00');
+    // Get original prices from settings with custom defaults
+    $monthly_original = get_option('wcl_monthly_original_price', '$15.00');
+    $yearly_original = get_option('wcl_yearly_original_price', '$159.00');
 
     if ($plan_type === 'yearly') {
         $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s every year for the first year</strong>.', 'wp-content-locker'), $data['amount']);
-        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>$%s every year</strong> thereafter.', 'wp-content-locker'), $yearly_std_price);
+        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every year</strong> thereafter.', 'wp-content-locker'), $yearly_original);
     } else {
         $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s every month for the first 3 months</strong>.', 'wp-content-locker'), $data['amount']);
-        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>$%s every month</strong> thereafter.', 'wp-content-locker'), $monthly_std_price);
+        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every month</strong> thereafter.', 'wp-content-locker'), $monthly_original);
     }
 
     $message = '
@@ -217,7 +216,8 @@ class WCL_User {
                     <ul style="padding-left: 20px; margin-bottom: 0; color: #000; line-height: 1.5;">
                         <li style="margin-bottom: 10px;">' . $renewal_text . '</li>
                         <li style="margin-bottom: 10px;">' . __('Sales tax may apply. Prices subject to change.', 'wp-content-locker') . '</li>
-                        <li style="margin-bottom: 0;">' . sprintf(__('You can cancel anytime in your <a href="%s" style="color: #309FFE; text-decoration: underline;">account settings</a>.', 'wp-content-locker'), esc_url($account_url)) . '</li>
+                        <li style="margin-bottom: 10px;">' . sprintf(__('You can <a href="%s" style="color: #309FFE; text-decoration: underline;">cancel</a> your subscription online anytime in your account settings, or notify us of your intent to cancel by <a href="%s" style="color: #309FFE; text-decoration: underline;">contact us</a>.', 'wp-content-locker'), home_url('/my-account/?tab=subscription'), home_url('/feedback-form/')) . '</li>
+                        <li style="margin-bottom: 0;">' . sprintf(__('Cancellations take effect at the end of your current billing period. For more information, see our <a href="%s" style="color: #309FFE; text-decoration: underline;">Terms of service</a>.', 'wp-content-locker'), home_url('/terms-of-service/')) . '</li>
                     </ul>
                 </div>
 
