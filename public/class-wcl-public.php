@@ -503,8 +503,14 @@ class WCL_Public {
         }
 
         $redirect_args = array('wcl_subscribed' => '1');
-        if (isset($is_new_user) && $is_new_user) {
-            $redirect_args['wcl_new_user'] = '1';
+        
+        // Debugging info
+        if (isset($is_new_user)) {
+             $redirect_args['wcl_new_user'] = $is_new_user ? '1' : '0';
+        }
+        
+        if (isset($user_result) && is_wp_error($user_result)) {
+            $redirect_args['wcl_user_error'] = $user_result->get_error_code();
         }
 
         if ($post_id) {
