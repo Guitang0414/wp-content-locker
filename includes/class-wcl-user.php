@@ -236,7 +236,19 @@ class WCL_User {
         </html>';
 
         $headers = array('Content-Type: text/html; charset=UTF-8');
-        $headers[] = 'From: ' . $site_name . ' <' . get_option('admin_email') . '>';
+        
+        // Get sender settings with fallbacks
+        $sender_name = get_option('wcl_email_sender_name');
+        if (empty($sender_name)) {
+            $sender_name = $site_name;
+        }
+
+        $sender_email = get_option('wcl_email_sender_address');
+        if (empty($sender_email)) {
+            $sender_email = get_option('admin_email');
+        }
+
+        $headers[] = 'From: ' . $sender_name . ' <' . $sender_email . '>';
         
         return wp_mail($user->user_email, $subject, $message, $headers);
     }

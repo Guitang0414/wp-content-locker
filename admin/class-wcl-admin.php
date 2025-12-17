@@ -321,6 +321,46 @@ class WCL_Admin {
             'wcl_display_section',
             array('name' => 'wcl_subscribe_button_text', 'class' => 'regular-text')
         );
+
+        // Email Settings Section
+        add_settings_section(
+            'wcl_email_section',
+            __('Email Settings', 'wp-content-locker'),
+            null,
+            'wp-content-locker'
+        );
+
+        // Sender Name
+        register_setting('wcl_settings', 'wcl_email_sender_name');
+        add_settings_field(
+            'wcl_email_sender_name',
+            __('Sender Name', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_email_section',
+            array(
+                'name' => 'wcl_email_sender_name', 
+                'class' => 'regular-text',
+                'placeholder' => get_bloginfo('name'),
+                'description' => __('Leave empty to use Site Title', 'wp-content-locker')
+            )
+        );
+
+        // Sender Email
+        register_setting('wcl_settings', 'wcl_email_sender_address');
+        add_settings_field(
+            'wcl_email_sender_address',
+            __('Sender Email Address', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_email_section',
+            array(
+                'name' => 'wcl_email_sender_address', 
+                'class' => 'regular-text',
+                'placeholder' => get_option('admin_email'),
+                'description' => __('Leave empty to use Admin Email', 'wp-content-locker')
+            )
+        );
     }
 
     /**
