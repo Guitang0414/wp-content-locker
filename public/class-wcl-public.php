@@ -211,17 +211,7 @@ class WCL_Public {
             ),
         );
 
-        // Add custom text for Monthly plan
-        if ($plan_type === 'monthly') {
-            $terms_message = 'I agree to the [Terms of Service](https://arizonainsiders.com/terms-of-service/).' . "\n\n" .
-                '**This offer is available to first-time customers only.** After 3 months, your subscription will automatically renew to $8.99 per month. You may cancel or pause anytime at no cost to you. To avoid future charges, please cancel before your next renewal date.';
 
-            $params['custom_text'] = array(
-                'terms_of_service_acceptance' => array(
-                    'message' => $terms_message,
-                ),
-            );
-        }
 
         // If user is logged in, use their email and check for existing customer
         if (is_user_logged_in()) {
