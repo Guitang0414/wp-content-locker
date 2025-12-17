@@ -268,16 +268,6 @@ class WCL_Stripe {
             ),
         );
 
-        if (isset($params['billing_address_collection'])) {
-            $data['billing_address_collection'] = $params['billing_address_collection'];
-        }
-
-        if (isset($params['automatic_tax'])) {
-            // automatic_tax is an array, we need to map it correctly for x-www-form-urlencoded
-            if (isset($params['automatic_tax']['enabled'])) {
-                $data['automatic_tax[enabled]'] = $params['automatic_tax']['enabled'] ? 'true' : 'false';
-            }
-        }
 
         if (isset($params['discounts'])) {
             $data['discounts'] = $params['discounts'];

@@ -205,8 +205,8 @@ class WCL_Public {
             'price_id' => $price_id,
             'success_url' => $success_url,
             'cancel_url' => $cancel_url,
-            'billing_address_collection' => 'required', // Force billing address collection
-            'automatic_tax' => array('enabled' => true), // Enable automatic tax calculation
+            'billing_address_collection' => 'auto', // Auto billing address collection
+            'automatic_tax' => array('enabled' => false), // Disable automatic tax calculation
             'metadata' => array(
                 'post_id' => $post_id,
                 'plan_type' => $plan_type,
