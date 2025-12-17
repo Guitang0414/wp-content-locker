@@ -136,12 +136,17 @@ class WCL_User {
     
     // Generate renewal text logic
     $renewal_text = '';
+    
+    // Get standard rates from settings with fallbacks
+    $monthly_std_price = get_option('wcl_monthly_price', '15.00');
+    $yearly_std_price = get_option('wcl_yearly_price', '159.00');
+
     if ($plan_type === 'yearly') {
         $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s every year for the first year</strong>.', 'wp-content-locker'), $data['amount']);
-        $renewal_text .= '<br>' . __('Your payment method will then be automatically charged the standard rate of <strong>$159.00 every year</strong> thereafter.', 'wp-content-locker');
+        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>$%s every year</strong> thereafter.', 'wp-content-locker'), $yearly_std_price);
     } else {
         $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s every month for the first 3 months</strong>.', 'wp-content-locker'), $data['amount']);
-        $renewal_text .= '<br>' . __('Your payment method will then be automatically charged the standard rate of <strong>$15.00 every month</strong> thereafter.', 'wp-content-locker');
+        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>$%s every month</strong> thereafter.', 'wp-content-locker'), $monthly_std_price);
     }
 
     $message = '
