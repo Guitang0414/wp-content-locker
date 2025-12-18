@@ -49,10 +49,14 @@ class WCL_Public {
     /**
      * Enqueue public styles
      */
+    /**
+     * Enqueue public styles
+     */
     public function enqueue_styles() {
-        if (!is_singular('post')) {
-            return;
-        }
+        // Load globally to support popup and header modifications
+        // if (!is_singular('post')) {
+        //     return;
+        // }
 
         wp_enqueue_style(
             'wcl-public',
@@ -66,10 +70,10 @@ class WCL_Public {
      * Enqueue public scripts
      */
     public function enqueue_scripts() {
-        // Always load on single posts - let JS handle the rest
-        if (!is_singular('post')) {
-            return;
-        }
+        // Load globally to support popup and header modifications
+        // if (!is_singular('post')) {
+        //     return;
+        // }
 
         // Use the shared inline method
         $this->enqueue_paywall_scripts();
