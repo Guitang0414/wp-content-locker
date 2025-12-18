@@ -135,7 +135,6 @@ class WCL_Public {
 
         echo '<script type="text/javascript">
         var wclData = ' . json_encode($data) . ';
-        console.log("WCL Loaded at: ' . time() . '");
         </script>';
 
         echo '<script type="text/javascript">';
