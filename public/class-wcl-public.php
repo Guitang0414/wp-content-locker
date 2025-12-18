@@ -454,6 +454,18 @@ class WCL_Public {
 
                 $is_new_user = is_array($user_result) && isset($user_result['new_user']) && $user_result['new_user'];
 
+                // Race condition fix: If webhook created user first, is_new_user will be false
+                // Check if user was registered in the last 2 minutes
+                if (!$is_new_user) {
+                    $user = get_user_by('id', $user_id);
+                    if ($user) {
+                        $registered = strtotime($user->user_registered . ' GMT'); // WP stores as GMT
+                        if (time() - $registered < 120) {
+                            $is_new_user = true;
+                        }
+                    }
+                }
+
                 // Auto-login the user
                 WCL_User::auto_login($user_id);
 
