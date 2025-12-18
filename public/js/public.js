@@ -12,42 +12,59 @@
         },
 
         redirectMobileAccountLinks: function () {
-            // Only strictly on mobile (width < 768px)
-            if ($(window).width() >= 768) {
-                return;
-            }
+            // DEBUG MODE: Run on ALL devices for testing
+            // if ($(window).width() >= 768) return; 
 
             // Target URL provided by backend
             var targetUrl = (typeof wclData !== 'undefined' && wclData.accountPageUrl) ? wclData.accountPageUrl : '';
-            if (!targetUrl) return;
 
-            // Debug: Log to console
-            console.log('WCL: Initializing Capture-Phase Interceptor');
+            // Visual Debug Banner
+            if (!$('#wcl-debug-banner').length) {
+                $('body').prepend('<div id="wcl-debug-banner" style="position:fixed;top:0;left:0;width:100%;background:yellow;color:red;z-index:999999;text-align:center;padding:5px;font-weight:bold;border-bottom:2px solid red;">WCL JS LOADED - Searching for Icon...</div>');
+            }
 
-            // Use Native Capture Phase to beat everything else
+            if (!targetUrl) {
+                $('#wcl-debug-banner').append(' (No Target URL)');
+                return;
+            }
+
+            // Function to apply logic to found elements
+            function interceptLinks() {
+                var selector = '.tdw-wml-link, .tdw-wml-wrap a, a[href*="login-register"], .mobile-menu a[href*="account"]';
+                var $links = $(selector);
+
+                if ($links.length) {
+                    $links.css({
+                        'border': '5px solid red',
+                        'background': 'rgba(255,0,0,0.2)',
+                        'display': 'block' // Ensure visibility
+                    });
+                    $('#wcl-debug-banner').text('WCL JS: FOUND TARGET (' + $links.length + ')').css('background', '#0f0').css('color', '#000');
+                }
+            }
+
+            // 1. Run immediately
+            interceptLinks();
+
+            // 2. Setup MutationObserver for dynamic content
+            var observer = new MutationObserver(function (mutations) {
+                interceptLinks();
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            // 3. Keep Capture Phase Listener active
             document.addEventListener('click', function (e) {
-                // Check if the clicked element or its parent matches our target
-                // We use closest() to handle clicks on the icon <i> inside the <a>
                 var selector = '.tdw-wml-link, .tdw-wml-wrap a, a[href*="login-register"], .mobile-menu a[href*="account"]';
                 var link = e.target.closest(selector);
 
                 if (link) {
                     console.log('WCL: Intercepted click on:', link);
-
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
-
                     window.location.href = targetUrl;
                 }
-            }, true); // 'true' enables Capture Phase
-
-            // Visual Debug: Add a red border to confirmed elements so user can see what we found
-            $(document).ready(function () {
-                var $debugLinks = $('.tdw-wml-link, .tdw-wml-wrap a, a[href*="login-register"]');
-                $debugLinks.css('border', '3px solid red');
-                console.log('WCL: Highlighted ' + $debugLinks.length + ' elements with red border');
-            });
+            }, true);
         },
 
         checkSuccessMessage: function () {
