@@ -21,36 +21,33 @@
             var targetUrl = (typeof wclData !== 'undefined' && wclData.accountPageUrl) ? wclData.accountPageUrl : '';
             if (!targetUrl) return;
 
-            // Common selectors for account/user icons in headers or mobile menus
-            // - a[href*="my-account"] : standard Woo
-            // - a[href*="login"] : standard WP
-            // - .account-link, .user-icon : common class names (guesswork)
+            // Debug: Log to console
+            console.log('WCL: Initializing Capture-Phase Interceptor');
 
-            var selectors = [
-                'a[href*="my-account"]',
-                'a[href*="login-register"]',
-                'a[href*="/login"]',
-                '.account-link a',
-                '.user-account-link',
-                '.mobile-menu a[href*="account"]',
-                '.tdw-wml-link',
-                '.tdw-wml-wrap a'
-            ];
+            // Use Native Capture Phase to beat everything else
+            document.addEventListener('click', function (e) {
+                // Check if the clicked element or its parent matches our target
+                // We use closest() to handle clicks on the icon <i> inside the <a>
+                var selector = '.tdw-wml-link, .tdw-wml-wrap a, a[href*="login-register"], .mobile-menu a[href*="account"]';
+                var link = e.target.closest(selector);
 
-            var $links = $(selectors.join(', '));
+                if (link) {
+                    console.log('WCL: Intercepted click on:', link);
 
-            if ($links.length) {
-                console.log('WCL: Found ' + $links.length + ' account links to redirect on mobile.');
-                $links.attr('href', targetUrl);
-
-                // Also unbind potential existing events (like theme sidebars) and force navigation
-                $links.off('click').on('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
+
                     window.location.href = targetUrl;
-                });
-            }
+                }
+            }, true); // 'true' enables Capture Phase
+
+            // Visual Debug: Add a red border to confirmed elements so user can see what we found
+            $(document).ready(function () {
+                var $debugLinks = $('.tdw-wml-link, .tdw-wml-wrap a, a[href*="login-register"]');
+                $debugLinks.css('border', '3px solid red');
+                console.log('WCL: Highlighted ' + $debugLinks.length + ' elements with red border');
+            });
         },
 
         checkSuccessMessage: function () {
