@@ -34,6 +34,13 @@ jQuery(document).ready(function ($) {
 
         $('.wcl-tab-content').removeClass('active');
         $('#wcl-tab-' + tab).addClass('active');
+
+        // Mobile UX: Scroll to content if sidebar is stacked
+        if ($(window).width() < 768) {
+            $('html, body').animate({
+                scrollTop: $('.wcl-main-content').offset().top - 20
+            }, 500);
+        }
     });
 
     // Profile Update
