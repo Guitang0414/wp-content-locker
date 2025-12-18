@@ -28,11 +28,13 @@
 
             var selectors = [
                 'a[href*="my-account"]',
-                'a[href*="login-register"]', // User mentioned this specific slug
+                'a[href*="login-register"]',
                 'a[href*="/login"]',
                 '.account-link a',
                 '.user-account-link',
-                '.mobile-menu a[href*="account"]'
+                '.mobile-menu a[href*="account"]',
+                '.tdw-wml-link',
+                '.tdw-wml-wrap a'
             ];
 
             var $links = $(selectors.join(', '));
@@ -43,9 +45,10 @@
 
                 // Also unbind potential existing events (like theme sidebars) and force navigation
                 $links.off('click').on('click', function (e) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    // Let default action proceed with new href, or force it:
-                    // window.location.href = targetUrl;
+                    e.stopImmediatePropagation();
+                    window.location.href = targetUrl;
                 });
             }
         },
