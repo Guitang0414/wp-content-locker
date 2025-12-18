@@ -8,6 +8,46 @@
     var WCLPaywall = {
         init: function () {
             this.checkSuccessMessage();
+            this.redirectMobileAccountLinks();
+        },
+
+        redirectMobileAccountLinks: function () {
+            // Only strictly on mobile (width < 768px)
+            if ($(window).width() >= 768) {
+                return;
+            }
+
+            // Target URL provided by backend
+            var targetUrl = (typeof wclData !== 'undefined' && wclData.accountPageUrl) ? wclData.accountPageUrl : '';
+            if (!targetUrl) return;
+
+            // Common selectors for account/user icons in headers or mobile menus
+            // - a[href*="my-account"] : standard Woo
+            // - a[href*="login"] : standard WP
+            // - .account-link, .user-icon : common class names (guesswork)
+
+            var selectors = [
+                'a[href*="my-account"]',
+                'a[href*="login-register"]', // User mentioned this specific slug
+                'a[href*="/login"]',
+                '.account-link a',
+                '.user-account-link',
+                '.mobile-menu a[href*="account"]'
+            ];
+
+            var $links = $(selectors.join(', '));
+
+            if ($links.length) {
+                console.log('WCL: Found ' + $links.length + ' account links to redirect on mobile.');
+                $links.attr('href', targetUrl);
+
+                // Also unbind potential existing events (like theme sidebars) and force navigation
+                $links.off('click').on('click', function (e) {
+                    e.stopPropagation();
+                    // Let default action proceed with new href, or force it:
+                    // window.location.href = targetUrl;
+                });
+            }
         },
 
         checkSuccessMessage: function () {

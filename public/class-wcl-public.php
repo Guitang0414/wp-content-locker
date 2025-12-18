@@ -104,10 +104,16 @@ class WCL_Public {
             $is_test_mode = true;
         }
 
+        // Find Account Page URL
+        global $wpdb;
+        $account_page_id = $wpdb->get_var("SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE '%[wcl_account]%' AND post_status = 'publish' AND post_type = 'page' LIMIT 1");
+        $account_page_url = $account_page_id ? get_permalink($account_page_id) : home_url();
+
         $data = array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wcl_checkout_nonce'),
             'postId' => get_the_ID(),
+            'accountPageUrl' => $account_page_url, // URL to WCL account page
             'isLoggedIn' => is_user_logged_in(),
             'isTestMode' => $is_test_mode,
             'strings' => array(
