@@ -22,6 +22,7 @@ class WCL_Account {
         add_action('wp_ajax_wcl_login', array($this, 'ajax_login'));
         add_action('wp_ajax_nopriv_wcl_login', array($this, 'ajax_login'));
         add_action('wp_ajax_wcl_update_profile', array($this, 'ajax_update_profile'));
+        add_action('wp_ajax_wcl_change_password', array($this, 'ajax_change_password'));
         add_action('wp_ajax_wcl_register', array($this, 'ajax_register'));
         add_action('wp_ajax_nopriv_wcl_register', array($this, 'ajax_register'));
         add_action('wp_ajax_wcl_lost_password', array($this, 'ajax_lost_password'));
