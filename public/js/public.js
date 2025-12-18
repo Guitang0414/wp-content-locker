@@ -14,7 +14,12 @@
             // Check URL for success parameter
             var urlParams = new URLSearchParams(window.location.search);
 
+            console.log('WCL Debug: Params:', window.location.search);
+            console.log('WCL Debug: New User?', urlParams.get('wcl_new_user'));
+            console.log('WCL Debug: Subscribed?', urlParams.get('wcl_subscribed'));
+
             if (urlParams.get('wcl_new_user') === '1') {
+                console.log('WCL Debug: Triggering Welcome Popup');
                 this.showWelcomePopup();
             } else if (urlParams.get('wcl_subscribed') === '1') {
                 // Show standard success message if not new user popup
@@ -29,10 +34,13 @@
             }
 
             // Clean up URL if we have either parameter
+            // DISABLED FOR DEBUGGING
+            /*
             if ((urlParams.get('wcl_subscribed') === '1' || urlParams.get('wcl_new_user') === '1') && window.history.replaceState) {
                 var cleanUrl = window.location.href.split('?')[0];
                 window.history.replaceState({}, document.title, cleanUrl);
             }
+            */
         },
 
         showWelcomePopup: function () {
