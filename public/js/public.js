@@ -20,7 +20,7 @@
 
             // Visual Debug Banner
             if (!$('#wcl-debug-banner').length) {
-                $('body').prepend('<div id="wcl-debug-banner" style="position:fixed;top:0;left:0;width:100%;background:yellow;color:red;z-index:999999;text-align:center;padding:5px;font-weight:bold;border-bottom:2px solid red;">WCL JS LOADED - Searching for Icon...</div>');
+                $('body').prepend('<div id="wcl-debug-banner" style="position:fixed;top:0;left:0;width:100%;background:red;color:white;z-index:999999;text-align:center;padding:10px;font-weight:bold;border-bottom:2px solid yellow;font-size:16px;">WCL v2 LOADED - Waiting...</div>');
             }
 
             if (!targetUrl) {
