@@ -398,7 +398,7 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
 
     <div class="hero">
         <div class="offer-label">Limited Time Offer</div>
-        <h1>✨ Only $1/week for the first 3 months</h1>
+        <h1>✨ Subscribe Now and Get 1 Month Free</h1>
         
         <div class="separator"></div>
 
@@ -448,8 +448,8 @@ if (isset($_GET['wcl_test_mode']) && ($_GET['wcl_test_mode'] == '1' && current_u
                     <?php if (!empty($yearly_original_str)) : ?>
                     <div class="old-price"><?php echo $yearly_original_str; ?>/year</div>
                     <?php endif; ?>
-                    <div class="current-price">$0/month for first month</div>
-                    <div class="billing-text">$159/year from the 2<sup>nd</sup> month</div>
+                    <div class="current-price">$139/year for 1 year</div>
+                    <div class="billing-text">$159/year from the 2<sup>nd</sup> year</div>
                 </div>
 
                 <?php if (!$is_logged_in): ?>
