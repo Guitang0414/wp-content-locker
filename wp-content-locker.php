@@ -17,20 +17,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// EMERGENCY DEBUGGING: Log errors to a local file
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    $message = date('[Y-m-d H:i:s]') . " Error ($errno): $errstr in $errfile on line $errline\n";
-    file_put_contents(dirname(__FILE__) . '/wcl-debug-error.log', $message, FILE_APPEND);
-    return false;
-});
-register_shutdown_function(function() {
-    $error = error_get_last();
-    if ($error !== NULL && in_array($error['type'], array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR))) {
-        $message = date('[Y-m-d H:i:s]') . " FATAL ERROR: {$error['message']} in {$error['file']} on line {$error['line']}\n";
-        file_put_contents(dirname(__FILE__) . '/wcl-debug-error.log', $message, FILE_APPEND);
-    }
-});
-
 // Plugin constants
 if (!defined('WCL_VERSION')) {
     define('WCL_VERSION', '1.1.0');
@@ -49,10 +35,11 @@ if (!defined('WCL_PLUGIN_BASENAME')) {
 require_once WCL_PLUGIN_DIR . 'includes/class-wcl-activator.php';
 require_once WCL_PLUGIN_DIR . 'includes/class-wcl-deactivator.php';
 
-/**
- * Main plugin class
- */
-class WP_Content_Locker {
+if (!class_exists('WP_Content_Locker')) {
+    /**
+     * Main plugin class
+     */
+    class WP_Content_Locker {
 
     /**
      * Single instance of the class
@@ -218,6 +205,7 @@ class WP_Content_Locker {
         WCL_Deactivator::deactivate();
     }
 }
+}
 
 // Activation and deactivation hooks
 register_activation_hook(__FILE__, array('WP_Content_Locker', 'activate'));
@@ -229,4 +217,4 @@ register_deactivation_hook(__FILE__, array('WP_Content_Locker', 'deactivate'));
 function wcl_init() {
     return WP_Content_Locker::get_instance();
 }
-// add_action('plugins_loaded', 'wcl_init');
+add_action('plugins_loaded', 'wcl_init');
