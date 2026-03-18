@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_Subscription')) {
 class WCL_Subscription {
 
     /**
@@ -315,4 +316,5 @@ class WCL_Subscription {
 
         return isset($labels[$status]) ? $labels[$status] : $status;
     }
+}
 }
