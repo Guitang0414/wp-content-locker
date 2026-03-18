@@ -221,4 +221,4 @@ register_deactivation_hook(__FILE__, array('WP_Content_Locker', 'deactivate'));
 function wcl_init() {
     return WP_Content_Locker::get_instance();
 }
-add_action('plugins_loaded', 'wcl_init');
+// add_action('plugins_loaded', 'wcl_init');
