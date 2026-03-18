@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_Admin')) {
 class WCL_Admin {
 
     /**
@@ -715,4 +716,5 @@ class WCL_Admin {
         </div>
         <?php
     }
+}
 }
