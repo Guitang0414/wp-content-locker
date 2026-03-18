@@ -32,10 +32,18 @@ register_shutdown_function(function() {
 });
 
 // Plugin constants
-define('WCL_VERSION', '1.1.0');
-define('WCL_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('WCL_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WCL_PLUGIN_BASENAME', plugin_basename(__FILE__));
+if (!defined('WCL_VERSION')) {
+    define('WCL_VERSION', '1.1.0');
+}
+if (!defined('WCL_PLUGIN_DIR')) {
+    define('WCL_PLUGIN_DIR', plugin_dir_path(__FILE__));
+}
+if (!defined('WCL_PLUGIN_URL')) {
+    define('WCL_PLUGIN_URL', plugin_dir_url(__FILE__));
+}
+if (!defined('WCL_PLUGIN_BASENAME')) {
+    define('WCL_PLUGIN_BASENAME', plugin_basename(__FILE__));
+}
 
 // Load activator early for activation hook
 require_once WCL_PLUGIN_DIR . 'includes/class-wcl-activator.php';
