@@ -17,6 +17,20 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// EMERGENCY DEBUGGING: Log errors to a local file
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    $message = date('[Y-m-d H:i:s]') . " Error ($errno): $errstr in $errfile on line $errline\n";
+    file_put_contents(dirname(__FILE__) . '/wcl-debug-error.log', $message, FILE_APPEND);
+    return false;
+});
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error !== NULL && in_array($error['type'], array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR))) {
+        $message = date('[Y-m-d H:i:s]') . " FATAL ERROR: {$error['message']} in {$error['file']} on line {$error['line']}\n";
+        file_put_contents(dirname(__FILE__) . '/wcl-debug-error.log', $message, FILE_APPEND);
+    }
+});
+
 // Plugin constants
 define('WCL_VERSION', '1.1.0');
 define('WCL_PLUGIN_DIR', plugin_dir_path(__FILE__));
