@@ -31,190 +31,20 @@ if (!defined('WCL_PLUGIN_BASENAME')) {
     define('WCL_PLUGIN_BASENAME', plugin_basename(__FILE__));
 }
 
-// Load activator early for activation hook
+/*
 require_once WCL_PLUGIN_DIR . 'includes/class-wcl-activator.php';
 require_once WCL_PLUGIN_DIR . 'includes/class-wcl-deactivator.php';
 
 if (!class_exists('WP_Content_Locker')) {
-    /**
-     * Main plugin class
-     */
-    class WP_Content_Locker {
-
-    /**
-     * Single instance of the class
-     */
-    private static $instance = null;
-
-    /**
-     * Get single instance
-     */
-    public static function get_instance() {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
-    /**
-     * Constructor
-     */
-    private function __construct() {
-        if (!$this->check_requirements()) {
-            return;
-        }
-        $this->load_dependencies();
-        $this->set_locale();
-        $this->define_admin_hooks();
-        $this->define_public_hooks();
-    }
-
-    /**
-     * Check if plugin requirements are met
-     */
-    private function check_requirements() {
-        $missing = array();
-        if (!class_exists('DOMDocument')) {
-            $missing[] = 'PHP DOM (php-dom)';
-        }
-        if (!function_exists('mb_strlen')) {
-            $missing[] = 'PHP Multibyte String (php-mbstring)';
-        }
-
-        if (!empty($missing)) {
-            add_action('admin_notices', function() use ($missing) {
-                ?>
-                <div class="notice notice-error">
-                    <p><?php printf(__('<strong>WP Content Locker Error:</strong> Your server is missing required PHP extensions: %s. Please contact your hosting provider to enable them.', 'wp-content-locker'), implode(', ', $missing)); ?></p>
-                </div>
-                <?php
-            });
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Load required files
-     */
-    private function load_dependencies() {
-        // Core classes (activator and deactivator already loaded above)
-        require_once WCL_PLUGIN_DIR . 'includes/class-wcl-content.php';
-        require_once WCL_PLUGIN_DIR . 'includes/class-wcl-stripe.php';
-        require_once WCL_PLUGIN_DIR . 'includes/class-wcl-subscription.php';
-        require_once WCL_PLUGIN_DIR . 'includes/class-wcl-user.php';
-
-        // Admin classes - metabox needs to be loaded always for save_post hook
-        require_once WCL_PLUGIN_DIR . 'admin/class-wcl-metabox.php';
-        if (is_admin()) {
-            require_once WCL_PLUGIN_DIR . 'admin/class-wcl-admin.php';
-        }
-
-        // Public classes
-        require_once WCL_PLUGIN_DIR . 'public/class-wcl-public.php';
-        require_once WCL_PLUGIN_DIR . 'public/class-wcl-account.php';
-    }
-
-    /**
-     * Set plugin locale for translations
-     */
-    private function set_locale() {
-        add_action('plugins_loaded', function() {
-            load_plugin_textdomain(
-                'wp-content-locker',
-                false,
-                dirname(WCL_PLUGIN_BASENAME) . '/languages/'
-            );
-        });
-    }
-
-    /**
-     * Register admin hooks
-     */
-    private function define_admin_hooks() {
-        // Metabox - constructor registers meta for REST API (Gutenberg)
-        $metabox = new WCL_Metabox();
-
-        // save_post hook for classic editor fallback
-        add_action('save_post', array($metabox, 'save_meta_box'), 10, 1);
-
-        if (is_admin()) {
-            $admin = new WCL_Admin();
-            add_action('admin_menu', array($admin, 'add_settings_page'));
-            add_action('admin_init', array($admin, 'register_settings'));
-            add_action('admin_enqueue_scripts', array($admin, 'enqueue_styles'));
-            add_action('admin_enqueue_scripts', array($admin, 'enqueue_scripts'));
-
-            add_action('add_meta_boxes', array($metabox, 'add_meta_box'));
-        }
-    }
-
-    /**
-     * Register public hooks
-     */
-    private function define_public_hooks() {
-        $public = new WCL_Public();
-
-        // Standard WordPress content filter
-        add_filter('the_content', array($public, 'filter_content'), 99);
-
-        // Elementor compatibility
-        add_filter('elementor/frontend/the_content', array($public, 'filter_content'), 99);
-
-        // tagDiv / Starter Templates theme compatibility
-        add_filter('tdc_single_content', array($public, 'filter_content'), 99);
-        add_filter('td_module_content', array($public, 'filter_content'), 99);
-
-        // Alternative: Hook into template_redirect for full page control
-        add_action('template_redirect', array($public, 'maybe_apply_paywall_redirect'));
-
-        add_action('wp_enqueue_scripts', array($public, 'enqueue_styles'), 10);
-        add_action('wp_enqueue_scripts', array($public, 'enqueue_scripts'), 10);
-
-        // AJAX handlers
-        add_action('wp_ajax_wcl_create_checkout', array($public, 'create_checkout_session'));
-        add_action('wp_ajax_nopriv_wcl_create_checkout', array($public, 'create_checkout_session'));
-
-        // Stripe webhook handler
-        $stripe = WCL_Stripe::get_instance();
-        add_action('rest_api_init', array($stripe, 'register_webhook_endpoint'));
-
-        // Checkout success handler
-        add_action('template_redirect', array($public, 'handle_checkout_success'));
-
-        // Subscription page rewrite rules
-        add_action('init', array($public, 'add_rewrite_rules'));
-        add_filter('query_vars', array($public, 'register_query_vars'));
-        add_filter('template_include', array($public, 'subscription_page_template'));
-
-        // Account page shortcode
-        new WCL_Account();
-    }
-
-    /**
-     * Run on plugin activation
-     */
-    public static function activate() {
-        WCL_Activator::activate();
-    }
-
-    /**
-     * Run on plugin deactivation
-     */
-    public static function deactivate() {
-        WCL_Deactivator::deactivate();
-    }
-}
+... [rest of the class]
 }
 
-// Activation and deactivation hooks
 register_activation_hook(__FILE__, array('WP_Content_Locker', 'activate'));
 register_deactivation_hook(__FILE__, array('WP_Content_Locker', 'deactivate'));
 
-/**
- * Initialize the plugin
- */
 function wcl_init() {
     return WP_Content_Locker::get_instance();
 }
 add_action('plugins_loaded', 'wcl_init');
+*/
+echo '<!-- WP Content Locker is temporarily disabled -->';
