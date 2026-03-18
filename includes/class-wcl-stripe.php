@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_Stripe')) {
 class WCL_Stripe {
 
     /**
@@ -755,4 +756,5 @@ class WCL_Stripe {
 
         return $symbol . number_format($amount, 2) . $interval_text;
     }
+}
 }
