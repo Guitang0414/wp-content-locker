@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_Public')) {
 class WCL_Public {
 
     /**
@@ -570,4 +571,5 @@ class WCL_Public {
         }
         return $template;
     }
+}
 }
