@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_User')) {
 class WCL_User {
 
     /**
@@ -304,4 +305,5 @@ class WCL_User {
         wp_set_auth_cookie($user_id, true);
         do_action('wp_login', $user->user_login, $user);
     }
+}
 }
