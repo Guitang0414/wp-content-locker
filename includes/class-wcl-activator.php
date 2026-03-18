@@ -7,7 +7,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WCL_Activator {
+if (!class_exists('WCL_Activator')) {
+    class WCL_Activator {
 
     /**
      * Run on plugin activation
@@ -101,4 +102,5 @@ class WCL_Activator {
             }
         }
     }
+}
 }
