@@ -51,10 +51,38 @@ class WP_Content_Locker {
      * Constructor
      */
     private function __construct() {
+        if (!$this->check_requirements()) {
+            return;
+        }
         $this->load_dependencies();
         $this->set_locale();
         $this->define_admin_hooks();
         $this->define_public_hooks();
+    }
+
+    /**
+     * Check if plugin requirements are met
+     */
+    private function check_requirements() {
+        $missing = array();
+        if (!class_exists('DOMDocument')) {
+            $missing[] = 'PHP DOM (php-dom)';
+        }
+        if (!function_exists('mb_strlen')) {
+            $missing[] = 'PHP Multibyte String (php-mbstring)';
+        }
+
+        if (!empty($missing)) {
+            add_action('admin_notices', function() use ($missing) {
+                ?>
+                <div class="notice notice-error">
+                    <p><?php printf(__('<strong>WP Content Locker Error:</strong> Your server is missing required PHP extensions: %s. Please contact your hosting provider to enable them.', 'wp-content-locker'), implode(', ', $missing)); ?></p>
+                </div>
+                <?php
+            });
+            return false;
+        }
+        return true;
     }
 
     /**

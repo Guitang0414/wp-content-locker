@@ -58,7 +58,13 @@ class WCL_Content {
     public static function truncate_content($content, $percentage = 30) {
         // Strip shortcodes and tags for accurate character count
         $plain_text = wp_strip_all_tags(strip_shortcodes($content));
-        $total_chars = mb_strlen($plain_text);
+        // Check if mbstring is available
+        if (function_exists('mb_strlen')) {
+            $total_chars = mb_strlen($plain_text);
+        } else {
+            $total_chars = strlen($plain_text);
+        }
+
         $target_chars = (int) ($total_chars * ($percentage / 100));
 
         if ($target_chars >= $total_chars) {
@@ -66,7 +72,17 @@ class WCL_Content {
         }
 
         // We need to truncate the HTML content while preserving tags
-        return self::truncate_html($content, $target_chars);
+        // Check if DOMDocument is available for clean HTML truncation
+        if (class_exists('DOMDocument')) {
+            return self::truncate_html($content, $target_chars);
+        }
+
+        // Fallback for servers without php-dom: simple character truncation
+        // This is less clean (might break tags) but prevents fatal errors
+        if (function_exists('mb_substr')) {
+            return mb_substr($content, 0, $target_chars) . '...';
+        }
+        return substr($content, 0, $target_chars) . '...';
     }
 
     /**
@@ -108,7 +124,7 @@ class WCL_Content {
                 // Find a good breaking point (word boundary)
                 $remaining = $max_chars - $char_count;
                 $break_pos = self::find_word_boundary($text, $remaining);
-                $node->nodeValue = mb_substr($text, 0, $break_pos) . '...';
+                $node->nodeValue = (function_exists('mb_substr') ? mb_substr($text, 0, $break_pos) : substr($text, 0, $break_pos)) . '...';
                 $truncated = true;
             }
             $char_count += $text_length;
@@ -139,17 +155,23 @@ class WCL_Content {
      * Find word boundary for clean truncation
      */
     private static function find_word_boundary($text, $position) {
-        if ($position >= mb_strlen($text)) {
-            return mb_strlen($text);
+        $text_len = function_exists('mb_strlen') ? mb_strlen($text) : strlen($text);
+        if ($position >= $text_len) {
+            return $text_len;
         }
 
         // Look for space, period, comma, or newline near the position
         $search_range = min(50, $position);
         $start = max(0, $position - $search_range);
-        $substring = mb_substr($text, $start, $search_range * 2);
+        
+        if (function_exists('mb_substr')) {
+            $substring = mb_substr($text, $start, $search_range * 2);
+            $last_space = mb_strrpos(mb_substr($substring, 0, $search_range + 10), ' ');
+        } else {
+            $substring = substr($text, $start, $search_range * 2);
+            $last_space = strrpos(substr($substring, 0, $search_range + 10), ' ');
+        }
 
-        // Find the last space before or near position
-        $last_space = mb_strrpos(mb_substr($substring, 0, $search_range + 10), ' ');
         if ($last_space !== false) {
             return $start + $last_space;
         }

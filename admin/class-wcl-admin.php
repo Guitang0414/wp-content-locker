@@ -361,6 +361,14 @@ class WCL_Admin {
                 'description' => __('Leave empty to use Admin Email', 'wp-content-locker')
             )
         );
+
+        // System Status Section
+        add_settings_section(
+            'wcl_system_status_section',
+            __('System Status', 'wp-content-locker'),
+            array($this, 'render_system_status_section'),
+            'wp-content-locker'
+        );
     }
 
     /**
@@ -440,6 +448,45 @@ class WCL_Admin {
 
             echo '</div>';
         }
+    }
+
+    /**
+     * Render System Status section
+     */
+    public function render_system_status_section() {
+        echo '<p>' . __('Diagnostic information about your environment.', 'wp-content-locker') . '</p>';
+        
+        $dom_ok = class_exists('DOMDocument');
+        $mb_ok = function_exists('mb_strlen');
+        $stripe = WCL_Stripe::get_instance();
+        $mode = get_option('wcl_stripe_mode', 'test');
+        $sk = ($mode === 'live') ? get_option('wcl_stripe_live_secret_key') : get_option('wcl_stripe_test_secret_key');
+        
+        echo '<table class="widefat striped" style="max-width: 600px; margin-top: 10px;">';
+        
+        // PHP Extensions
+        echo '<tr><td><strong>' . __('PHP DOM Extension', 'wp-content-locker') . '</strong></td><td>' . ($dom_ok ? '<span style="color:green;">✔ ' . __('Enabled', 'wp-content-locker') . '</span>' : '<span style="color:red;">✘ ' . __('Missing (Critical)', 'wp-content-locker') . '</span>') . '</td></tr>';
+        echo '<tr><td><strong>' . __('PHP Multibyte String', 'wp-content-locker') . '</strong></td><td>' . ($mb_ok ? '<span style="color:green;">✔ ' . __('Enabled', 'wp-content-locker') . '</span>' : '<span style="color:red;">✘ ' . __('Missing (Critical)', 'wp-content-locker') . '</span>') . '</td></tr>';
+        
+        // Stripe Connectivity
+        $stripe_status = __('Not Checked', 'wp-content-locker');
+        if (!empty($sk)) {
+            $response = $stripe->api_request('/balance');
+            if (is_wp_error($response)) {
+                $stripe_status = '<span style="color:red;">✘ ' . __('Connection Error:', 'wp-content-locker') . ' ' . esc_html($response->get_error_message()) . '</span>';
+            } else {
+                $stripe_status = '<span style="color:green;">✔ ' . __('Connected', 'wp-content-locker') . '</span>';
+            }
+        } else {
+            $stripe_status = '<em>' . __('Keys not configured', 'wp-content-locker') . '</em>';
+        }
+        echo '<tr><td><strong>' . __('Stripe Connectivity', 'wp-content-locker') . '</strong></td><td>' . $stripe_status . '</td></tr>';
+        
+        // WP Version
+        global $wp_version;
+        echo '<tr><td><strong>' . __('WordPress Version', 'wp-content-locker') . '</strong></td><td>' . esc_html($wp_version) . '</td></tr>';
+        
+        echo '</table>';
     }
 
     /**
