@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_Metabox')) {
 class WCL_Metabox {
 
     /**
@@ -217,4 +218,5 @@ class WCL_Metabox {
             update_post_meta($post_id, '_wcl_preview_percentage', $percentage);
         }
     }
+}
 }
