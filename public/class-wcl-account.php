@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_Account')) {
 class WCL_Account {
 
     /**
@@ -484,4 +485,5 @@ class WCL_Account {
 
         return $data;
     }
+}
 }
