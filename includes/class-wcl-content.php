@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!class_exists('WCL_Content')) {
 class WCL_Content {
 
     /**
@@ -273,5 +274,6 @@ class WCL_Content {
                '<div class="wcl-fade-overlay"></div>' .
                $paywall_html .
                '</div>';
-    }
+}
+}
 }
