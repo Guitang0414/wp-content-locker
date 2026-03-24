@@ -69,16 +69,17 @@ class WCL_Subscriptions_List_Table extends WP_List_Table {
         $user = get_user_by('id', $user_id);
         
         if (!$user) {
-            return __('Unknown User', 'wp-content-locker');
+            $avatar = '<span class="dashicons dashicons-admin-users" style="width:32px;height:32px;font-size:32px;color:#ccc;"></span>';
+            $user_info = sprintf('<strong>%s (ID: %d)</strong>', __('Unknown User', 'wp-content-locker'), $user_id);
+        } else {
+            $avatar = get_avatar($user_id, 32);
+            $user_info = sprintf(
+                '<a href="%s"><strong>%s</strong></a><br><span class="email">%s</span>',
+                get_edit_user_link($user_id),
+                $user->display_name,
+                $user->user_email
+            );
         }
-
-        $avatar = get_avatar($user_id, 32);
-        $user_name = sprintf(
-            '<a href="%s"><strong>%s</strong></a>',
-            get_edit_user_link($user_id),
-            $user->display_name
-        );
-        $user_email = sprintf('<span class="email">%s</span>', $user->user_email);
 
         // Actions
         $actions = array(
@@ -90,7 +91,7 @@ class WCL_Subscriptions_List_Table extends WP_List_Table {
             )
         );
 
-        return sprintf('%s %s<br>%s %s', $avatar, $user_name, $user_email, $this->row_actions($actions));
+        return sprintf('<div style="display:flex;align-items:center;"><div style="margin-right:10px;">%s</div><div>%s %s</div></div>', $avatar, $user_info, $this->row_actions($actions));
     }
 
     /**
