@@ -656,7 +656,24 @@ class WCL_Admin {
                         add_settings_error('wcl_messages', 'wcl_error', $result->get_error_message(), 'error');
                     } else {
                         update_user_meta($user_id, '_wcl_subscription_status', 'active');
-                        add_settings_error('wcl_messages', 'wcl_success', sprintf(__('Manual subscription added for %s until %s.', 'wp-content-locker'), $email, $end_date), 'updated');
+                        
+                        // Prepare and send email notification
+                        $plan_name = ($plan_type === 'yearly') ? __('Yearly Subscription', 'wp-content-locker') : __('Monthly Subscription', 'wp-content-locker');
+                        $email_data = array(
+                            'user_id' => $user_id,
+                            'password' => is_array($user_result) ? $user_result['password'] : null,
+                            'new_user' => is_array($user_result) ? $user_result['new_user'] : false,
+                            'plan_name' => $plan_name,
+                            'plan_type' => $plan_type,
+                            'amount' => __('$0.00 (Manual)', 'wp-content-locker'),
+                            'tax' => '',
+                            'subtotal' => '',
+                            'post_url' => home_url(),
+                            'invoice_pdf' => ''
+                        );
+                        WCL_User::send_subscription_email($email_data);
+
+                        add_settings_error('wcl_messages', 'wcl_success', sprintf(__('Manual subscription added for %s until %s. Email notification sent.', 'wp-content-locker'), $email, $end_date), 'updated');
                     }
                 }
             }
