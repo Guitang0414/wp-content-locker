@@ -316,5 +316,18 @@ class WCL_Subscription {
 
         return isset($labels[$status]) ? $labels[$status] : $status;
     }
+
+    /**
+     * Delete all subscriptions for a user when they are deleted from WordPress
+     */
+    public static function delete_by_user_id($user_id) {
+        global $wpdb;
+        $wpdb->delete(
+            self::get_table_name(),
+            array('user_id' => $user_id),
+            array('%d')
+        );
+    }
+}
 }
 }
