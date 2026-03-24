@@ -113,8 +113,8 @@ if (!class_exists('WP_Content_Locker')) {
 			add_action('admin_enqueue_scripts', array($plugin_admin, 'enqueue_scripts'));
 			
 			// Metaboxes
-			add_action('add_meta_boxes', array($plugin_metabox, 'add_metabox'));
-			add_action('save_post', array($plugin_metabox, 'save_metabox'));
+			add_action('add_meta_boxes', array($plugin_metabox, 'add_meta_box'));
+			add_action('save_post', array($plugin_metabox, 'save_meta_box'));
 
             // Cleanup
             add_action('delete_user', array('WCL_Subscription', 'delete_by_user_id'));
