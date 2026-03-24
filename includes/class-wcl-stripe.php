@@ -659,6 +659,7 @@ class WCL_Stripe {
 
         WCL_Subscription::update_subscription_by_stripe_id($subscription_id, array(
             'status' => 'canceled',
+            'current_period_end' => date('Y-m-d H:i:s'), // Revoke access immediately
         ));
 
         $sub = WCL_Subscription::get_by_stripe_subscription_id($subscription_id);
