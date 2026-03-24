@@ -611,6 +611,57 @@ class WCL_Admin {
 
         require_once WCL_PLUGIN_DIR . 'admin/class-wcl-subscriptions-list-table.php';
 
+
+        // Handle manual addition
+        if (isset($_POST['wcl_action']) && $_POST['wcl_action'] === 'add_manual_subscription') {
+            check_admin_referer('wcl_add_manual_subscription');
+            
+            if (!current_user_can('manage_options')) {
+                wp_die(__('You do not have sufficient permissions to access this page.', 'wp-content-locker'));
+            }
+
+            $email = sanitize_email($_POST['user_email']);
+            $name = sanitize_text_field($_POST['user_name']);
+            $plan_type = sanitize_text_field($_POST['plan_type']);
+            $duration_val = intval($_POST['duration_value']);
+            $duration_unit = sanitize_text_field($_POST['duration_unit']);
+
+            if (empty($email)) {
+                add_settings_error('wcl_messages', 'wcl_error', __('Email is required.', 'wp-content-locker'), 'error');
+            } else {
+                $user_result = WCL_User::get_or_create_user($email, $name);
+                
+                if (is_wp_error($user_result)) {
+                    add_settings_error('wcl_messages', 'wcl_error', $user_result->get_error_message(), 'error');
+                } else {
+                    $user_id = is_array($user_result) ? $user_result['user_id'] : $user_result;
+                    
+                    $start_date = current_time('mysql');
+                    $end_date = date('Y-m-d H:i:s', strtotime("+$duration_val $duration_unit", current_time('timestamp')));
+
+                    $subscription_data = array(
+                        'user_id'                => $user_id,
+                        'stripe_customer_id'     => 'manual_' . time(),
+                        'stripe_subscription_id' => 'manual_sub_' . time(),
+                        'plan_type'              => $plan_type,
+                        'mode'                   => 'live',
+                        'status'                 => 'active',
+                        'current_period_start'   => $start_date,
+                        'current_period_end'     => $end_date,
+                    );
+
+                    $result = WCL_Subscription::create_subscription($subscription_data);
+                    
+                    if (is_wp_error($result)) {
+                        add_settings_error('wcl_messages', 'wcl_error', $result->get_error_message(), 'error');
+                    } else {
+                        update_user_meta($user_id, '_wcl_subscription_status', 'active');
+                        add_settings_error('wcl_messages', 'wcl_success', sprintf(__('Manual subscription added for %s until %s.', 'wp-content-locker'), $email, $end_date), 'updated');
+                    }
+                }
+            }
+        }
+
         // Handle deletion
         if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
             check_admin_referer('wcl_delete_subscription');
@@ -630,6 +681,49 @@ class WCL_Admin {
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('Subscriptions', 'wp-content-locker'); ?></h1>
             <?php settings_errors('wcl_messages'); ?>
+
+            <div class="card" style="max-width: 100%; margin-bottom: 20px;">
+                <h2 class="title"><?php _e('Add Manual Subscription', 'wp-content-locker'); ?></h2>
+                <p class="description"><?php _e('Quickly grant access to a user without Stripe payment.', 'wp-content-locker'); ?></p>
+                <form method="post" action="">
+                    <?php wp_nonce_field('wcl_add_manual_subscription'); ?>
+                    <input type="hidden" name="wcl_action" value="add_manual_subscription">
+                    
+                    <table class="form-table" role="presentation">
+                        <tr>
+                            <th scope="row"><label for="user_email"><?php _e('User Email', 'wp-content-locker'); ?></label></th>
+                            <td><input name="user_email" type="email" id="user_email" value="" class="regular-text" required></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="user_name"><?php _e('User Name (Optional)', 'wp-content-locker'); ?></label></th>
+                            <td><input name="user_name" type="text" id="user_name" value="" class="regular-text"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="plan_type"><?php _e('Plan Type', 'wp-content-locker'); ?></label></th>
+                            <td>
+                                <select name="plan_type" id="plan_type">
+                                    <option value="monthly"><?php _e('Monthly', 'wp-content-locker'); ?></option>
+                                    <option value="yearly" selected><?php _e('Yearly', 'wp-content-locker'); ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="duration_value"><?php _e('Duration', 'wp-content-locker'); ?></label></th>
+                            <td>
+                                <input name="duration_value" type="number" id="duration_value" value="1" class="small-text" min="1">
+                                <select name="duration_unit" id="duration_unit">
+                                    <option value="days"><?php _e('Day(s)', 'wp-content-locker'); ?></option>
+                                    <option value="months"><?php _e('Month(s)', 'wp-content-locker'); ?></option>
+                                    <option value="years" selected><?php _e('Year(s)', 'wp-content-locker'); ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <?php submit_button(__('Add Subscription', 'wp-content-locker'), 'primary', 'submit', false); ?>
+                </form>
+            </div>
+            
             
             <form method="get">
                 <input type="hidden" name="page" value="wcl-subscriptions" />
