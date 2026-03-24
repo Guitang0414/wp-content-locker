@@ -115,6 +115,9 @@ if (!class_exists('WP_Content_Locker')) {
 			// Metaboxes
 			add_action('add_meta_boxes', array($plugin_metabox, 'add_metabox'));
 			add_action('save_post', array($plugin_metabox, 'save_metabox'));
+
+            // Cleanup
+            add_action('delete_user', array('WCL_Subscription', 'delete_by_user_id'));
 		}
 
 		/**
