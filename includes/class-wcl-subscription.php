@@ -330,4 +330,3 @@ class WCL_Subscription {
     }
 }
 }
-}
