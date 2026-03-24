@@ -163,7 +163,7 @@ class WCL_Admin {
         );
 
         // Monthly Display Price
-        register_setting('wcl_settings', 'wcl_monthly_price');
+        register_setting('wcl_settings', 'wcl_monthly_price', array('sanitize_callback' => 'sanitize_text_field'));
         add_settings_field(
             'wcl_monthly_price',
             __('Monthly Display Price (optional)', 'wp-content-locker'),
@@ -251,7 +251,7 @@ class WCL_Admin {
         );
 
         // Yearly Display Price
-        register_setting('wcl_settings', 'wcl_yearly_price');
+        register_setting('wcl_settings', 'wcl_yearly_price', array('sanitize_callback' => 'sanitize_text_field'));
         add_settings_field(
             'wcl_yearly_price',
             __('Yearly Display Price (optional)', 'wp-content-locker'),
@@ -280,7 +280,7 @@ class WCL_Admin {
         );
 
         // Preview Percentage
-        register_setting('wcl_settings', 'wcl_preview_percentage');
+        register_setting('wcl_settings', 'wcl_preview_percentage', array('sanitize_callback' => 'absint'));
         add_settings_field(
             'wcl_preview_percentage',
             __('Preview Percentage', 'wp-content-locker'),
