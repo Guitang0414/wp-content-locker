@@ -82,13 +82,22 @@ class WCL_Subscriptions_List_Table extends WP_List_Table {
         }
 
         // Actions
-        $actions = array(
-            'delete' => sprintf(
+        $actions = array();
+
+        if ($item['status'] === 'active') {
+            $actions['cancel'] = sprintf(
                 '<a href="%s" onclick="return confirm(\'%s\')">%s</a>',
-                wp_nonce_url(add_query_arg(array('action' => 'delete', 'id' => $item['id'])), 'wcl_delete_subscription'),
-                __('Are you sure you want to delete this subscription?', 'wp-content-locker'),
-                __('Delete', 'wp-content-locker')
-            )
+                wp_nonce_url(add_query_arg(array('action' => 'cancel', 'id' => $item['id'])), 'wcl_cancel_subscription'),
+                __('Are you sure you want to cancel this subscription at the end of the current period?', 'wp-content-locker'),
+                __('Cancel', 'wp-content-locker')
+            );
+        }
+
+        $actions['delete'] = sprintf(
+            '<a href="%s" onclick="return confirm(\'%s\')">%s</a>',
+            wp_nonce_url(add_query_arg(array('action' => 'delete', 'id' => $item['id'])), 'wcl_delete_subscription'),
+            __('Are you sure you want to delete this subscription?', 'wp-content-locker'),
+            __('Delete', 'wp-content-locker')
         );
 
         return sprintf('<div style="display:flex;align-items:center;"><div style="margin-right:10px;">%s</div><div>%s %s</div></div>', $avatar, $user_info, $this->row_actions($actions));
