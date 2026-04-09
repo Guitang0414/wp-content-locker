@@ -679,6 +679,19 @@ class WCL_Admin {
             }
         }
 
+        // Handle cancellation
+        if (isset($_GET['action']) && $_GET['action'] === 'cancel' && isset($_GET['id'])) {
+            check_admin_referer('wcl_cancel_subscription');
+            $id = absint($_GET['id']);
+            
+            $result = WCL_Subscription::cancel_subscription($id, true);
+            if (is_wp_error($result)) {
+                add_settings_error('wcl_messages', 'wcl_error', $result->get_error_message(), 'error');
+            } else {
+                add_settings_error('wcl_messages', 'wcl_success', __('Subscription set to cancel at the end of the current period.', 'wp-content-locker'), 'updated');
+            }
+        }
+
         // Handle deletion
         if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
             check_admin_referer('wcl_delete_subscription');
