@@ -220,12 +220,17 @@ class WCL_Subscription {
             return new WP_Error('not_found', __('Subscription not found.', 'wp-content-locker'));
         }
 
-        // Cancel in Stripe
-        $stripe = WCL_Stripe::get_instance();
-        $result = $stripe->cancel_subscription($subscription->stripe_subscription_id, $at_period_end);
+        // Check if it's a manual subscription (doesn't exist in Stripe)
+        $is_manual = (strpos($subscription->stripe_subscription_id, 'manual_') === 0);
 
-        if (is_wp_error($result)) {
-            return $result;
+        if (!$is_manual) {
+            // Cancel in Stripe
+            $stripe = WCL_Stripe::get_instance();
+            $result = $stripe->cancel_subscription($subscription->stripe_subscription_id, $at_period_end);
+
+            if (is_wp_error($result)) {
+                return $result;
+            }
         }
 
         // Update local record
