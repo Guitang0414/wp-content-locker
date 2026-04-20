@@ -448,6 +448,25 @@ class WCL_Public {
             exit;
         }
 
+        // Security check: Only process Arizona Insiders prices
+        $subscription = isset($session['subscription']) ? $session['subscription'] : null;
+        if ($subscription && is_array($subscription)) {
+            $price_id = isset($subscription['items']['data'][0]['price']['id']) ? $subscription['items']['data'][0]['price']['id'] : '';
+            $monthly_id = $stripe->get_monthly_price_id();
+            $yearly_id = $stripe->get_yearly_price_id();
+
+            if (empty($price_id) || ($price_id !== $monthly_id && $price_id !== $yearly_id)) {
+                error_log('WCL Success Redirect: Ignoring unrelated product price: ' . $price_id);
+                // Redirect anyway to the post, but don't create user/sub
+                if ($post_id) {
+                    wp_redirect(get_permalink($post_id));
+                } else {
+                    wp_redirect(home_url());
+                }
+                exit;
+            }
+        }
+
         // Get customer email
         $customer_email = '';
         if (isset($session['customer']) && is_array($session['customer'])) {
