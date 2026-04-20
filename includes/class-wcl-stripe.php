@@ -522,6 +522,19 @@ class WCL_Stripe {
         } else {
             $subscription = $this->get_subscription($subscription_id);
         }
+
+        // Security check: Only process Arizona Insiders prices
+        if ($subscription && !is_wp_error($subscription)) {
+            $price_id = isset($subscription['items']['data'][0]['price']['id']) ? $subscription['items']['data'][0]['price']['id'] : '';
+            $monthly_id = $this->get_monthly_price_id();
+            $yearly_id = $this->get_yearly_price_id();
+
+            if (empty($price_id) || ($price_id !== $monthly_id && $price_id !== $yearly_id)) {
+                error_log('WCL Webhook: Ignoring unrelated product price: ' . $price_id);
+                return;
+            }
+        }
+
         $plan_type = 'monthly';
         $period_start = null;
         $period_end = null;
