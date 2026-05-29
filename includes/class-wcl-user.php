@@ -131,28 +131,28 @@ class WCL_User {
         $post_url = isset($data['post_url']) ? $data['post_url'] : home_url();
         $account_url = $login_url;
 
-    $plan_type = isset($data['plan_type']) ? $data['plan_type'] : 'monthly';
-    $amount_subtotal = isset($data['subtotal']) ? $data['subtotal'] : $data['amount'];
-    $amount_tax = isset($data['tax']) ? $data['tax'] : '';
-    
-    // Generate renewal text logic
-    $renewal_text = '';
-    // Get original prices from settings with custom defaults
-    $monthly_original = get_option('wcl_monthly_original_price', '$15.00');
-    $yearly_original = get_option('wcl_yearly_original_price', '$159.00');
+        $plan_type = isset($data['plan_type']) ? $data['plan_type'] : 'monthly';
+        $amount_subtotal = isset($data['subtotal']) ? $data['subtotal'] : $amount;
+        $amount_tax = isset($data['tax']) ? $data['tax'] : '';
+        
+        // Generate renewal text logic
+        $renewal_text = '';
+        // Get original prices from settings with custom defaults
+        $monthly_original = get_option('wcl_monthly_original_price', '$15.00');
+        $yearly_original = get_option('wcl_yearly_original_price', '$159.00');
 
-    if ($plan_type === 'yearly') {
-        $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s for the first year</strong>.', 'wp-content-locker'), $data['amount']);
-        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every year</strong> thereafter.', 'wp-content-locker'), $yearly_original);
-    } else {
-        // Updated to support "1 Month Free" or special initial rates
-        if (strpos($data['amount'], '0.00') !== false) {
-            $renewal_text = __('Your first month is <strong>FREE</strong>!', 'wp-content-locker');
+        if ($plan_type === 'yearly') {
+            $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s for the first year</strong>.', 'wp-content-locker'), $amount);
+            $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every year</strong> thereafter.', 'wp-content-locker'), $yearly_original);
         } else {
-            $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s for the initial period</strong>.', 'wp-content-locker'), $data['amount']);
+            // Updated to support "1 Month Free" or special initial rates
+            if (strpos($amount, '0.00') !== false) {
+                $renewal_text = __('Your first month is <strong>FREE</strong>!', 'wp-content-locker');
+            } else {
+                $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s for the initial period</strong>.', 'wp-content-locker'), $amount);
+            }
+            $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every month</strong> thereafter.', 'wp-content-locker'), $monthly_original);
         }
-        $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every month</strong> thereafter.', 'wp-content-locker'), $monthly_original);
-    }
 
     $message = '
     <!DOCTYPE html>
@@ -172,11 +172,11 @@ class WCL_User {
             <div style="margin-bottom: 30px;">
                 <p style="font-size: 16px;">' . __('Thank you for subscribing! Your payment was successful. Below you will find your login credentials and order details.', 'wp-content-locker') . '</p>
                 
-                ' . ($data['new_user'] ? '
+                ' . ($is_new_user ? '
                 <div style="background-color: #f9f9f9; border-left: 4px solid #000; padding: 20px; margin: 25px 0;">
                     <h3 style="margin-top: 0; color: #000; font-family: Arial, sans-serif;">' . __('Your Login Credentials', 'wp-content-locker') . '</h3>
-                    <p style="margin: 8px 0;"><strong>' . __('Username:', 'wp-content-locker') . '</strong> ' . $user->user_login . '</p>
-                    <p style="margin: 8px 0;"><strong>' . __('Password:', 'wp-content-locker') . '</strong> ' . $data['password'] . '</p>
+                    <p style="margin: 8px 0;"><strong>' . __('Username:', 'wp-content-locker') . '</strong> ' . $username . '</p>
+                    <p style="margin: 8px 0;"><strong>' . __('Password:', 'wp-content-locker') . '</strong> ' . $password . '</p>
                     <p style="margin-top: 20px;"><a href="' . esc_url($login_url) . '" style="background-color: #000; color: #ffffff; padding: 12px 20px; text-decoration: none; border-radius: 3px; font-weight: bold; display: inline-block;">' . __('Log In Now', 'wp-content-locker') . '</a></p>
                 </div>
                 ' : '') . '
@@ -187,7 +187,7 @@ class WCL_User {
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="padding: 8px 0; color: #333; font-weight: bold; font-size: 12px;">' . __('Plan', 'wp-content-locker') . '</td>
-                            <td style="padding: 8px 0; text-align: right; color: #333; font-size: 16px; font-weight: bold;">' . esc_html($data['plan_name']) . '</td>
+                            <td style="padding: 8px 0; text-align: right; color: #333; font-size: 16px; font-weight: bold;">' . esc_html($plan_name) . '</td>
                         </tr>
                         <tr>
                             <td style="padding: 8px 0; color: #333; font-weight: bold; font-size: 12px;">' . __('Account Email', 'wp-content-locker') . '</td>
@@ -195,7 +195,7 @@ class WCL_User {
                         </tr>
                         ' . (!empty($amount_tax) ? '
                         <tr>
-                            <td style="padding: 8px 0; color: #333; font-weight: bold; font-size: 12px;">' . __('Wait Amount', 'wp-content-locker') . '</td>
+                            <td style="padding: 8px 0; color: #333; font-weight: bold; font-size: 12px;">' . __('Subtotal', 'wp-content-locker') . '</td>
                             <td style="padding: 8px 0; text-align: right; color: #333; font-size: 16px;">' . esc_html($amount_subtotal) . '</td>
                         </tr>
                         <tr>
@@ -204,7 +204,7 @@ class WCL_User {
                         </tr>' : '') . '
                          <tr>
                             <td style="padding: 8px 0; color: #333; font-weight: bold; font-size: 12px;">' . __('Total Amount', 'wp-content-locker') . '</td>
-                            <td style="padding: 8px 0; text-align: right; color: #333; font-size: 16px; font-weight: bold;">' . esc_html($data['amount']) . '</td>
+                            <td style="padding: 8px 0; text-align: right; color: #333; font-size: 16px; font-weight: bold;">' . esc_html($amount) . '</td>
                         </tr>
                         ' . (!empty($data['invoice_pdf']) ? '
                         <tr>
