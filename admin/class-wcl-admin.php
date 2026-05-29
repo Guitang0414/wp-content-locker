@@ -629,8 +629,8 @@ class WCL_Admin {
                 } else {
                     $user_id = is_array($user_result) ? $user_result['user_id'] : $user_result;
                     
-                    $start_date = current_time('mysql');
-                    $end_date = date('Y-m-d H:i:s', strtotime("+$duration_val $duration_unit", current_time('timestamp')));
+                    $start_date = gmdate('Y-m-d H:i:s');
+                    $end_date = gmdate('Y-m-d H:i:s', strtotime("+$duration_val $duration_unit", time()));
 
                     $subscription_data = array(
                         'user_id'                => $user_id,
