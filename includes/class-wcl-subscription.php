@@ -165,19 +165,20 @@ class WCL_Subscription {
     public static function has_active_subscription($user_id, $mode = null) {
         global $wpdb;
 
-        $now = current_time('mysql');
+        // Use UTC time because Stripe timestamps are converted to UTC before saving
+        $now = gmdate('Y-m-d H:i:s');
         $sql = "SELECT COUNT(*) FROM " . self::get_table_name() . "
              WHERE user_id = %d
              AND (
-                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > '$now'))
+                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > %s))
                  OR
-                 (status = 'canceled' AND current_period_end > '$now')
+                 (status = 'canceled' AND current_period_end > %s)
              )";
         
-        $params = array($user_id);
+        $params = array($user_id, $now, $now);
 
         if ($mode) {
-            $sql .= " AND mode = %s";
+            $sql .= " AND (mode = %s OR stripe_subscription_id LIKE 'manual_%%')";
             $params[] = $mode;
         }
 
@@ -192,19 +193,20 @@ class WCL_Subscription {
     public static function get_active_subscription($user_id, $mode = null) {
         global $wpdb;
 
-        $now = current_time('mysql');
+        // Use UTC time because Stripe timestamps are converted to UTC before saving
+        $now = gmdate('Y-m-d H:i:s');
         $sql = "SELECT * FROM " . self::get_table_name() . "
              WHERE user_id = %d
              AND (
-                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > '$now'))
+                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > %s))
                  OR
-                 (status = 'canceled' AND current_period_end > '$now')
+                 (status = 'canceled' AND current_period_end > %s)
              )";
         
-        $params = array($user_id);
+        $params = array($user_id, $now, $now);
 
         if ($mode) {
-            $sql .= " AND mode = %s";
+            $sql .= " AND (mode = %s OR stripe_subscription_id LIKE 'manual_%%')";
             $params[] = $mode;
         }
 
