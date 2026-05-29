@@ -338,8 +338,8 @@ class WCL_Public {
         $post_id = get_the_ID();
         $paywall_html = WCL_Content::get_paywall_html($post_id);
         $preview_percentage = get_post_meta($post_id, '_wcl_preview_percentage', true);
-        if (empty($preview_percentage)) {
-            $preview_percentage = get_option('wcl_preview_percentage', 30);
+        if ($preview_percentage === '') {
+            $preview_percentage = get_option('wcl_preview_percentage', 0);
         }
         ?>
         <script>
