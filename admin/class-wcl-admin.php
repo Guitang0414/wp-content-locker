@@ -287,7 +287,7 @@ class WCL_Admin {
             array($this, 'render_number_field'),
             'wp-content-locker',
             'wcl_display_section',
-            array('name' => 'wcl_preview_percentage', 'min' => 10, 'max' => 90, 'default' => 30)
+            array('name' => 'wcl_preview_percentage', 'min' => 0, 'max' => 100, 'default' => 0)
         );
 
         // Paywall Title
@@ -508,7 +508,7 @@ class WCL_Admin {
      * Render paywall mode field
      */
     public function render_paywall_mode_field() {
-        $value = get_option('wcl_default_paywall_mode', 'disabled');
+        $value = get_option('wcl_default_paywall_mode', 'enabled');
         ?>
         <select name="wcl_default_paywall_mode" id="wcl_default_paywall_mode">
             <option value="disabled" <?php selected($value, 'disabled'); ?>><?php _e('Disabled by default (enable per post)', 'wp-content-locker'); ?></option>
