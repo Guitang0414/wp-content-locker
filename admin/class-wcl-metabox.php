@@ -58,7 +58,7 @@ class WCL_Metabox {
      * Render meta box content
      */
     public function render_meta_box($post) {
-        $enabled = get_post_meta($post->ID, '_wcl_enable_paywall', true);
+        $post_setting = get_post_meta($post->ID, '_wcl_enable_paywall', true);
         $preview_percentage = get_post_meta($post->ID, '_wcl_preview_percentage', true);
         $default_mode = get_option('wcl_default_paywall_mode', 'disabled');
 
@@ -66,26 +66,31 @@ class WCL_Metabox {
         if ($preview_percentage === '') {
             $preview_percentage = get_option('wcl_preview_percentage', 0);
         }
-
-        $is_checked = ($enabled === 'yes');
+        
+        // Handle legacy 'yes' or empty string values
+        $current_value = 'default';
+        if ($post_setting === 'yes') {
+            $current_value = 'yes';
+        } elseif ($post_setting === 'no') {
+            $current_value = 'no';
+        }
         ?>
         <div class="wcl-metabox-content" id="wcl-metabox">
             <p class="wcl-default-notice" style="background:#f0f0f1;padding:8px 10px;border-left:3px solid #2271b1;margin:0 0 10px;">
                 <?php if ($default_mode === 'enabled') : ?>
-                    <em><?php _e('Global default: Enabled', 'wp-content-locker'); ?></em>
+                    <em><?php _e('Global default: Paywall is Enabled for all posts', 'wp-content-locker'); ?></em>
                 <?php else : ?>
-                    <em><?php _e('Global default: Disabled', 'wp-content-locker'); ?></em>
+                    <em><?php _e('Global default: Paywall is Disabled for all posts', 'wp-content-locker'); ?></em>
                 <?php endif; ?>
             </p>
 
             <p>
-                <label>
-                    <input type="checkbox"
-                           id="wcl_enable_paywall"
-                           value="yes"
-                           <?php checked($is_checked, true); ?> />
-                    <strong><?php _e('Enable paywall for this post', 'wp-content-locker'); ?></strong>
-                </label>
+                <label for="wcl_enable_paywall"><strong><?php _e('Paywall Status for this post:', 'wp-content-locker'); ?></strong></label><br>
+                <select id="wcl_enable_paywall" name="wcl_enable_paywall" style="width:100%;margin-top:5px;">
+                    <option value="default" <?php selected($current_value, 'default'); ?>><?php _e('Default (Use Global Setting)', 'wp-content-locker'); ?></option>
+                    <option value="yes" <?php selected($current_value, 'yes'); ?>><?php _e('Force Enabled (Paywall ON)', 'wp-content-locker'); ?></option>
+                    <option value="no" <?php selected($current_value, 'no'); ?>><?php _e('Force Disabled (Paywall OFF)', 'wp-content-locker'); ?></option>
+                </select>
             </p>
 
             <p>
@@ -94,15 +99,16 @@ class WCL_Metabox {
                 </label>
                 <input type="number"
                        id="wcl_preview_percentage"
+                       name="wcl_preview_percentage"
                        value="<?php echo esc_attr($preview_percentage); ?>"
                        min="0" max="100" style="width: 60px;" /> %
             </p>
 
-            <p id="wcl-status" style="<?php echo $is_checked ? 'color:green;' : 'color:#666;'; ?>">
-                <?php if ($is_checked) : ?>
-                    <strong><?php _e('Status: Paywall is ON', 'wp-content-locker'); ?></strong>
+            <p id="wcl-status" style="<?php echo ($current_value === 'yes' || ($current_value === 'default' && $default_mode === 'enabled')) ? 'color:green;' : 'color:#666;'; ?>">
+                <?php if ($current_value === 'yes' || ($current_value === 'default' && $default_mode === 'enabled')) : ?>
+                    <strong><?php _e('Effective Status: Paywall is ON', 'wp-content-locker'); ?></strong>
                 <?php else : ?>
-                    <?php _e('Status: Paywall is OFF', 'wp-content-locker'); ?>
+                    <?php _e('Effective Status: Paywall is OFF', 'wp-content-locker'); ?>
                 <?php endif; ?>
             </p>
 
@@ -112,23 +118,25 @@ class WCL_Metabox {
         <script>
         (function() {
             var postId = <?php echo $post->ID; ?>;
-            var checkbox = document.getElementById('wcl_enable_paywall');
+            var selectBox = document.getElementById('wcl_enable_paywall');
             var percentInput = document.getElementById('wcl_preview_percentage');
             var statusEl = document.getElementById('wcl-status');
             var saveStatusEl = document.getElementById('wcl-save-status');
+            var defaultMode = '<?php echo esc_js($default_mode); ?>';
 
-            function updateStatus(isEnabled) {
+            function updateStatus(val) {
+                var isEnabled = (val === 'yes') || (val === 'default' && defaultMode === 'enabled');
                 if (isEnabled) {
-                    statusEl.innerHTML = '<strong><?php _e('Status: Paywall is ON', 'wp-content-locker'); ?></strong>';
+                    statusEl.innerHTML = '<strong><?php _e('Effective Status: Paywall is ON', 'wp-content-locker'); ?></strong>';
                     statusEl.style.color = 'green';
                 } else {
-                    statusEl.innerHTML = '<?php _e('Status: Paywall is OFF', 'wp-content-locker'); ?>';
+                    statusEl.innerHTML = '<?php _e('Effective Status: Paywall is OFF', 'wp-content-locker'); ?>';
                     statusEl.style.color = '#666';
                 }
             }
 
             function saveMeta() {
-                var value = checkbox.checked ? 'yes' : '';
+                var value = selectBox.value === 'default' ? '' : selectBox.value;
                 var percent = percentInput.value !== '' ? parseInt(percentInput.value) : 0;
 
                 saveStatusEl.style.display = 'block';
@@ -150,7 +158,7 @@ class WCL_Metabox {
                     setTimeout(function() {
                         saveStatusEl.style.display = 'none';
                     }, 2000);
-                    updateStatus(checkbox.checked);
+                    updateStatus(selectBox.value);
                 }).catch(function(error) {
                     saveStatusEl.innerHTML = '<?php _e('Error saving. Please try again.', 'wp-content-locker'); ?>';
                     saveStatusEl.style.color = 'red';
@@ -158,8 +166,8 @@ class WCL_Metabox {
                 });
             }
 
-            // Save on checkbox change
-            checkbox.addEventListener('change', function() {
+            // Save on select change
+            selectBox.addEventListener('change', function() {
                 saveMeta();
             });
 
@@ -205,10 +213,14 @@ class WCL_Metabox {
         }
 
         // Save enable paywall
-        if (isset($_POST['wcl_enable_paywall']) && $_POST['wcl_enable_paywall'] === 'yes') {
-            update_post_meta($post_id, '_wcl_enable_paywall', 'yes');
-        } else {
-            delete_post_meta($post_id, '_wcl_enable_paywall');
+        if (isset($_POST['wcl_enable_paywall'])) {
+            $val = $_POST['wcl_enable_paywall'];
+            if ($val === 'yes' || $val === 'no') {
+                update_post_meta($post_id, '_wcl_enable_paywall', $val);
+            } else {
+                // If default, delete meta
+                delete_post_meta($post_id, '_wcl_enable_paywall');
+            }
         }
 
         // Save preview percentage
