@@ -63,8 +63,8 @@ class WCL_Metabox {
         $default_mode = get_option('wcl_default_paywall_mode', 'disabled');
 
         // Use global setting if not set
-        if ($preview_percentage === '' || $preview_percentage === 0) {
-            $preview_percentage = get_option('wcl_preview_percentage', 30);
+        if ($preview_percentage === '') {
+            $preview_percentage = get_option('wcl_preview_percentage', 0);
         }
 
         $is_checked = ($enabled === 'yes');
@@ -95,7 +95,7 @@ class WCL_Metabox {
                 <input type="number"
                        id="wcl_preview_percentage"
                        value="<?php echo esc_attr($preview_percentage); ?>"
-                       min="10" max="90" style="width: 60px;" /> %
+                       min="0" max="100" style="width: 60px;" /> %
             </p>
 
             <p id="wcl-status" style="<?php echo $is_checked ? 'color:green;' : 'color:#666;'; ?>">
@@ -129,7 +129,7 @@ class WCL_Metabox {
 
             function saveMeta() {
                 var value = checkbox.checked ? 'yes' : '';
-                var percent = parseInt(percentInput.value) || 30;
+                var percent = percentInput.value !== '' ? parseInt(percentInput.value) : 0;
 
                 saveStatusEl.style.display = 'block';
                 saveStatusEl.innerHTML = '<?php _e('Saving...', 'wp-content-locker'); ?>';
@@ -214,7 +214,7 @@ class WCL_Metabox {
         // Save preview percentage
         if (isset($_POST['wcl_preview_percentage']) && $_POST['wcl_preview_percentage'] !== '') {
             $percentage = absint($_POST['wcl_preview_percentage']);
-            $percentage = max(10, min(90, $percentage));
+            $percentage = max(0, min(100, $percentage));
             update_post_meta($post_id, '_wcl_preview_percentage', $percentage);
         }
     }
