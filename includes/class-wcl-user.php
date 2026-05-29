@@ -142,10 +142,15 @@ class WCL_User {
     $yearly_original = get_option('wcl_yearly_original_price', '$159.00');
 
     if ($plan_type === 'yearly') {
-        $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s every year for the first year</strong>.', 'wp-content-locker'), $data['amount']);
+        $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s for the first year</strong>.', 'wp-content-locker'), $data['amount']);
         $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every year</strong> thereafter.', 'wp-content-locker'), $yearly_original);
     } else {
-        $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s every month for the first 3 months</strong>.', 'wp-content-locker'), $data['amount']);
+        // Updated to support "1 Month Free" or special initial rates
+        if (strpos($data['amount'], '0.00') !== false) {
+            $renewal_text = __('Your first month is <strong>FREE</strong>!', 'wp-content-locker');
+        } else {
+            $renewal_text = sprintf(__('Your payment method will be automatically charged <strong>%s for the initial period</strong>.', 'wp-content-locker'), $data['amount']);
+        }
         $renewal_text .= '<br>' . sprintf(__('Your payment method will then be automatically charged the standard rate of <strong>%s every month</strong> thereafter.', 'wp-content-locker'), $monthly_original);
     }
 
