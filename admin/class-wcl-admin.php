@@ -469,19 +469,12 @@ class WCL_Admin {
         echo '<tr><td><strong>' . __('PHP DOM Extension', 'wp-content-locker') . '</strong></td><td>' . ($dom_ok ? '<span style="color:green;">✔ ' . __('Enabled', 'wp-content-locker') . '</span>' : '<span style="color:red;">✘ ' . __('Missing (Critical)', 'wp-content-locker') . '</span>') . '</td></tr>';
         echo '<tr><td><strong>' . __('PHP Multibyte String', 'wp-content-locker') . '</strong></td><td>' . ($mb_ok ? '<span style="color:green;">✔ ' . __('Enabled', 'wp-content-locker') . '</span>' : '<span style="color:red;">✘ ' . __('Missing (Critical)', 'wp-content-locker') . '</span>') . '</td></tr>';
         
-        // Stripe Connectivity
-        $stripe_status = __('Not Checked', 'wp-content-locker');
+        // Stripe Configuration Status
+        $stripe_status = '<span style="color:red;">' . __('Keys Not Configured', 'wp-content-locker') . '</span>';
         if (!empty($sk)) {
-            $response = $stripe->api_request('/balance');
-            if (is_wp_error($response)) {
-                $stripe_status = '<span style="color:red;">✘ ' . __('Connection Error:', 'wp-content-locker') . ' ' . esc_html($response->get_error_message()) . '</span>';
-            } else {
-                $stripe_status = '<span style="color:green;">✔ ' . __('Connected', 'wp-content-locker') . '</span>';
-            }
-        } else {
-            $stripe_status = '<em>' . __('Keys not configured', 'wp-content-locker') . '</em>';
+            $stripe_status = '<span style="color:green;">✔ ' . __('API Keys Provided', 'wp-content-locker') . ' (' . ucfirst($mode) . ')</span>';
         }
-        echo '<tr><td><strong>' . __('Stripe Connectivity', 'wp-content-locker') . '</strong></td><td>' . $stripe_status . '</td></tr>';
+        echo '<tr><td><strong>' . __('Stripe Configuration', 'wp-content-locker') . '</strong></td><td>' . $stripe_status . '</td></tr>';
         
         // WP Version
         global $wp_version;
