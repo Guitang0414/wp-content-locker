@@ -43,11 +43,25 @@ class WCL_Content {
     public static function user_can_access($post_id = null) {
         // Logged in users with active subscription can access
         if (is_user_logged_in()) {
-            $user_id = get_current_user_id();
+            $user = wp_get_current_user();
+            // Allow administrators and editors to bypass paywall
+            if (in_array('administrator', (array) $user->roles) || in_array('editor', (array) $user->roles)) {
+                return true;
+            }
+
+            $user_id = $user->ID;
             // Check if user has active subscription (respecting current mode for security)
             $mode = WCL_Stripe::get_mode();
             if (WCL_Subscription::has_active_subscription($user_id, $mode)) {
                 return true;
+            }
+
+            // Allow if user is a native WordPress subscriber but has NO Stripe history (manually added via WP Admin)
+            if (in_array('subscriber', (array) $user->roles)) {
+                $stripe_status = get_user_meta($user_id, '_wcl_subscription_status', true);
+                if (empty($stripe_status)) {
+                    return true;
+                }
             }
         }
         return false;
