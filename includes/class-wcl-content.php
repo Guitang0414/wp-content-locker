@@ -119,7 +119,7 @@ class WCL_Content {
 
         if ($node->nodeType === XML_TEXT_NODE) {
             $text = $node->nodeValue;
-            $text_length = mb_strlen($text);
+            $text_length = function_exists('mb_strlen') ? mb_strlen($text) : strlen($text);
 
             if ($char_count + $text_length > $max_chars) {
                 // Find a good breaking point (word boundary)
