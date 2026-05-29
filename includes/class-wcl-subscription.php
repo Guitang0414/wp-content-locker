@@ -165,12 +165,13 @@ class WCL_Subscription {
     public static function has_active_subscription($user_id, $mode = null) {
         global $wpdb;
 
+        $now = current_time('mysql');
         $sql = "SELECT COUNT(*) FROM " . self::get_table_name() . "
              WHERE user_id = %d
              AND (
-                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > NOW()))
+                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > '$now'))
                  OR
-                 (status = 'canceled' AND current_period_end > NOW())
+                 (status = 'canceled' AND current_period_end > '$now')
              )";
         
         $params = array($user_id);
@@ -191,12 +192,13 @@ class WCL_Subscription {
     public static function get_active_subscription($user_id, $mode = null) {
         global $wpdb;
 
+        $now = current_time('mysql');
         $sql = "SELECT * FROM " . self::get_table_name() . "
              WHERE user_id = %d
              AND (
-                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > NOW()))
+                 (status IN ('active', 'canceling') AND (current_period_end IS NULL OR current_period_end > '$now'))
                  OR
-                 (status = 'canceled' AND current_period_end > NOW())
+                 (status = 'canceled' AND current_period_end > '$now')
              )";
         
         $params = array($user_id);
