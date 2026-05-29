@@ -44,9 +44,9 @@ class WCL_Content {
         // Logged in users with active subscription can access
         if (is_user_logged_in()) {
             $user_id = get_current_user_id();
-            // Check if user has active subscription
-            // Check if user has active subscription (ignore mode mismatch for testing)
-            if (WCL_Subscription::has_active_subscription($user_id)) {
+            // Check if user has active subscription (respecting current mode for security)
+            $mode = WCL_Stripe::get_mode();
+            if (WCL_Subscription::has_active_subscription($user_id, $mode)) {
                 return true;
             }
         }
@@ -265,7 +265,7 @@ class WCL_Content {
         // Truncate content and add paywall
         // Check for post-specific percentage first, then fall back to global setting
         $post_percentage = get_post_meta($post_id, '_wcl_preview_percentage', true);
-        $percentage = !empty($post_percentage) ? (int) $post_percentage : (int) get_option('wcl_preview_percentage', 30);
+        $percentage = ($post_percentage !== '') ? (int) $post_percentage : (int) get_option('wcl_preview_percentage', 0);
         $truncated_content = self::truncate_content($content, $percentage);
         $paywall_html = self::get_paywall_html($post_id);
 
