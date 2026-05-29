@@ -197,3 +197,22 @@ function wcl_init() {
     return WP_Content_Locker::get_instance();
 }
 add_action('plugins_loaded', 'wcl_init');
+
+/**
+ * Temporary force-update script
+ * Visit your site with ?wcl_force_update=1 after this is saved.
+ */
+add_action('init', function() {
+    if (isset($_GET['wcl_force_update']) && $_GET['wcl_force_update'] == '1') {
+        if (current_user_can('manage_options')) {
+            update_option('wcl_default_paywall_mode', 'enabled');
+            update_option('wcl_preview_percentage', 0);
+            update_option('wcl_paywall_title', 'Limited Time Offer');
+            update_option('wcl_paywall_description', 'Claim your one-month FREE subscription to continue reading your article');
+            update_option('wcl_subscribe_button_text', 'Subscribe Now');
+            die('SUCCESS: Global settings have been forced to ENABLED and 0% PREVIEW. Please refresh your articles and then remove this code.');
+        } else {
+            die('ERROR: You must be an administrator to run this.');
+        }
+    }
+});
