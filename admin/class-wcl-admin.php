@@ -700,10 +700,23 @@ class WCL_Admin {
 
         $list_table = new WCL_Subscriptions_List_Table();
         $list_table->prepare_items();
+        
+        $stats = WCL_Subscription::get_paid_subscription_stats();
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('Subscriptions', 'wp-content-locker'); ?></h1>
             <?php settings_errors('wcl_messages'); ?>
+
+            <div style="display: flex; gap: 20px; margin: 20px 0;">
+                <div class="wcl-stat-card" style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.04); min-width: 200px;">
+                    <h3 style="margin: 0 0 10px 0; color: #646970; font-size: 14px; text-transform: uppercase;"><?php _e('Active Paid Yearly', 'wp-content-locker'); ?></h3>
+                    <div style="font-size: 28px; font-weight: 600; color: #1d2327;"><?php echo esc_html($stats['yearly']); ?></div>
+                </div>
+                <div class="wcl-stat-card" style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.04); min-width: 200px;">
+                    <h3 style="margin: 0 0 10px 0; color: #646970; font-size: 14px; text-transform: uppercase;"><?php _e('Active Paid Monthly', 'wp-content-locker'); ?></h3>
+                    <div style="font-size: 28px; font-weight: 600; color: #1d2327;"><?php echo esc_html($stats['monthly']); ?></div>
+                </div>
+            </div>
 
             <div class="card" style="max-width: 100%; margin-bottom: 20px;">
                 <h2 class="title"><?php _e('Add Manual Subscription', 'wp-content-locker'); ?></h2>
