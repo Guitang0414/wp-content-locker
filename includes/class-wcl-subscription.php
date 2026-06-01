@@ -337,5 +337,37 @@ class WCL_Subscription {
             array('%d')
         );
     }
+
+    /**
+     * Get statistics of paid subscriptions (excluding manual)
+     */
+    public static function get_paid_subscription_stats() {
+        global $wpdb;
+        $now = gmdate('Y-m-d H:i:s');
+        
+        $sql = "SELECT plan_type, COUNT(*) as count 
+                FROM " . self::get_table_name() . " 
+                WHERE status IN ('active', 'canceling') 
+                AND stripe_subscription_id NOT LIKE 'manual_%' 
+                AND (current_period_end IS NULL OR current_period_end > %s)
+                GROUP BY plan_type";
+                
+        $results = $wpdb->get_results($wpdb->prepare($sql, $now), ARRAY_A);
+        
+        $stats = array(
+            'yearly' => 0,
+            'monthly' => 0
+        );
+        
+        if ($results) {
+            foreach ($results as $row) {
+                if (isset($stats[$row['plan_type']])) {
+                    $stats[$row['plan_type']] = intval($row['count']);
+                }
+            }
+        }
+        
+        return $stats;
+    }
 }
 }
