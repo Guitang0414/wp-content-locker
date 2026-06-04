@@ -323,6 +323,54 @@ class WCL_Admin {
             array('name' => 'wcl_subscribe_button_text', 'class' => 'regular-text')
         );
 
+        // Bot Protection (Cloudflare Turnstile) Section
+        add_settings_section(
+            'wcl_turnstile_section',
+            __('Bot Protection (Cloudflare Turnstile)', 'wp-content-locker'),
+            array($this, 'render_turnstile_section'),
+            'wp-content-locker'
+        );
+
+        register_setting('wcl_settings', 'wcl_turnstile_enabled');
+        add_settings_field(
+            'wcl_turnstile_enabled',
+            __('Enable Turnstile', 'wp-content-locker'),
+            array($this, 'render_turnstile_enabled_field'),
+            'wp-content-locker',
+            'wcl_turnstile_section'
+        );
+
+        register_setting('wcl_settings', 'wcl_turnstile_site_key');
+        add_settings_field(
+            'wcl_turnstile_site_key',
+            __('Site Key', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_turnstile_section',
+            array(
+                'name' => 'wcl_turnstile_site_key',
+                'class' => 'regular-text',
+                'placeholder' => '0x4AAA...',
+                'description' => __('Public Site Key from Cloudflare Turnstile dashboard.', 'wp-content-locker'),
+            )
+        );
+
+        register_setting('wcl_settings', 'wcl_turnstile_secret_key');
+        add_settings_field(
+            'wcl_turnstile_secret_key',
+            __('Secret Key', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_turnstile_section',
+            array(
+                'name' => 'wcl_turnstile_secret_key',
+                'type' => 'password',
+                'class' => 'regular-text',
+                'placeholder' => '0x4AAA...',
+                'description' => __('Private Secret Key. Used server-side to verify the token.', 'wp-content-locker'),
+            )
+        );
+
         // Email Settings Section
         add_settings_section(
             'wcl_email_section',
@@ -373,7 +421,69 @@ class WCL_Admin {
     }
 
     /**
-     * Render settings page
+     * Tab definition for the settings page.
+     * Keyed by tab slug; each maps to a label + list of settings-section IDs.
+     */
+    private function get_settings_tabs() {
+        return array(
+            'stripe' => array(
+                'label' => __('Stripe', 'wp-content-locker'),
+                'sections' => array('wcl_stripe_section'),
+            ),
+            'pricing' => array(
+                'label' => __('Plans & Pricing', 'wp-content-locker'),
+                'sections' => array('wcl_pricing_section'),
+            ),
+            'display' => array(
+                'label' => __('Display', 'wp-content-locker'),
+                'sections' => array('wcl_display_section'),
+            ),
+            'security' => array(
+                'label' => __('Bot Protection', 'wp-content-locker'),
+                'sections' => array('wcl_turnstile_section'),
+            ),
+            'email' => array(
+                'label' => __('Email', 'wp-content-locker'),
+                'sections' => array('wcl_email_section'),
+            ),
+            'system' => array(
+                'label' => __('System Status', 'wp-content-locker'),
+                'sections' => array('wcl_system_status_section'),
+            ),
+        );
+    }
+
+    /**
+     * Render only the given settings sections (replaces do_settings_sections),
+     * so we can split one logical settings page across multiple visual tabs.
+     */
+    private function render_settings_sections($section_ids) {
+        global $wp_settings_sections, $wp_settings_fields;
+        $page = 'wp-content-locker';
+
+        foreach ($section_ids as $section_id) {
+            if (!isset($wp_settings_sections[$page][$section_id])) {
+                continue;
+            }
+            $section = $wp_settings_sections[$page][$section_id];
+
+            if (!empty($section['title'])) {
+                echo '<h2>' . esc_html($section['title']) . '</h2>';
+            }
+            if (!empty($section['callback'])) {
+                call_user_func($section['callback'], $section);
+            }
+            if (empty($wp_settings_fields[$page][$section_id])) {
+                continue;
+            }
+            echo '<table class="form-table" role="presentation"><tbody>';
+            do_settings_fields($page, $section_id);
+            echo '</tbody></table>';
+        }
+    }
+
+    /**
+     * Render settings page (tabbed).
      */
     public function render_settings_page() {
         if (!current_user_can('manage_options')) {
@@ -385,22 +495,35 @@ class WCL_Admin {
             add_settings_error('wcl_messages', 'wcl_message', __('Settings Saved', 'wp-content-locker'), 'updated');
         }
 
+        $tabs = $this->get_settings_tabs();
+        $current = isset($_GET['tab']) && isset($tabs[$_GET['tab']]) ? sanitize_key($_GET['tab']) : 'stripe';
         $webhook_url = rest_url('wp-content-locker/v1/webhook');
         ?>
         <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
             <?php settings_errors('wcl_messages'); ?>
 
-            <div class="wcl-admin-notice">
-                <p><strong><?php _e('Webhook URL:', 'wp-content-locker'); ?></strong></p>
-                <code><?php echo esc_url($webhook_url); ?></code>
-                <p class="description"><?php _e('Add this URL to your Stripe webhook settings. Required events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed', 'wp-content-locker'); ?></p>
-            </div>
+            <h2 class="nav-tab-wrapper wp-clearfix">
+                <?php foreach ($tabs as $slug => $tab) :
+                    $url = add_query_arg(array('page' => 'wp-content-locker', 'tab' => $slug), admin_url('admin.php'));
+                    $class = 'nav-tab' . ($slug === $current ? ' nav-tab-active' : '');
+                ?>
+                    <a href="<?php echo esc_url($url); ?>" class="<?php echo esc_attr($class); ?>"><?php echo esc_html($tab['label']); ?></a>
+                <?php endforeach; ?>
+            </h2>
+
+            <?php if ($current === 'stripe') : ?>
+                <div class="wcl-admin-notice" style="margin-top:16px;">
+                    <p><strong><?php _e('Webhook URL:', 'wp-content-locker'); ?></strong></p>
+                    <code><?php echo esc_url($webhook_url); ?></code>
+                    <p class="description"><?php _e('Add this URL to your Stripe webhook settings. Required events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed', 'wp-content-locker'); ?></p>
+                </div>
+            <?php endif; ?>
 
             <form action="options.php" method="post">
                 <?php
                 settings_fields('wcl_settings');
-                do_settings_sections('wp-content-locker');
+                $this->render_settings_sections($tabs[$current]['sections']);
                 submit_button(__('Save Settings', 'wp-content-locker'));
                 ?>
             </form>
@@ -495,6 +618,27 @@ class WCL_Admin {
         </select>
         <p class="description"><?php _e('Use Test mode for development, Live mode for production.', 'wp-content-locker'); ?></p>
         <?php
+    }
+
+    /**
+     * Render Turnstile section description
+     */
+    public function render_turnstile_section() {
+        echo '<p>' . __('Protect the account login / register / password-reset forms from bots using Cloudflare Turnstile. Get your free Site Key and Secret Key from the Cloudflare dashboard → Turnstile.', 'wp-content-locker') . '</p>';
+        echo '<p class="description"><a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener">' . esc_html__('Open Cloudflare Turnstile', 'wp-content-locker') . ' &rarr;</a></p>';
+    }
+
+    /**
+     * Render Turnstile enabled checkbox
+     */
+    public function render_turnstile_enabled_field() {
+        $value = (int) get_option('wcl_turnstile_enabled', 0);
+        printf(
+            '<label><input type="checkbox" name="wcl_turnstile_enabled" value="1" %s /> %s</label>',
+            checked($value, 1, false),
+            esc_html__('Show Turnstile widget on auth forms (requires both keys above).', 'wp-content-locker')
+        );
+        echo '<p class="description">' . esc_html__('Honeypot + IP rate-limit are always on regardless of this toggle.', 'wp-content-locker') . '</p>';
     }
 
     /**

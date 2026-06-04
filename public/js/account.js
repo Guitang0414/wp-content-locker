@@ -105,6 +105,16 @@ jQuery(document).ready(function ($) {
         });
     });
 
+    // Reset Turnstile widget inside a form after a failed submission
+    // (tokens are single-use; without reset the next attempt fails too).
+    function wclResetTurnstile(form) {
+        if (!window.turnstile) return;
+        var widget = form.find('.cf-turnstile')[0];
+        if (widget) {
+            try { turnstile.reset(widget); } catch (e) { /* ignore */ }
+        }
+    }
+
     // Login Form
     $('.wcl-login-form').submit(function (e) {
         e.preventDefault();
@@ -121,7 +131,9 @@ jQuery(document).ready(function ($) {
             username: form.find('input[name="username"]').val(),
             password: form.find('input[name="password"]').val(),
             remember: form.find('input[name="remember"]').is(':checked'),
-            redirect_to: form.find('input[name="redirect_to"]').val()
+            redirect_to: form.find('input[name="redirect_to"]').val(),
+            wcl_hp_website: form.find('input[name="wcl_hp_website"]').val() || '',
+            'cf-turnstile-response': form.find('[name="cf-turnstile-response"]').val() || ''
         }, function (response) {
             if (response.success) {
                 if (response.data.redirect) {
@@ -132,6 +144,7 @@ jQuery(document).ready(function ($) {
             } else {
                 btn.prop('disabled', false).text('Login');
                 msg.addClass('error').text(response.data.message).show();
+                wclResetTurnstile(form);
             }
         });
     });
@@ -200,7 +213,9 @@ jQuery(document).ready(function ($) {
             nonce: wclAccount.nonce,
             email: form.find('input[name="email"]').val(),
             name: form.find('input[name="name"]').val(),
-            password: form.find('input[name="password"]').val()
+            password: form.find('input[name="password"]').val(),
+            wcl_hp_website: form.find('input[name="wcl_hp_website"]').val() || '',
+            'cf-turnstile-response': form.find('[name="cf-turnstile-response"]').val() || ''
         }, function (response) {
             if (response.success) {
                 msg.addClass('success').text(response.data.message).show();
@@ -210,6 +225,7 @@ jQuery(document).ready(function ($) {
             } else {
                 btn.prop('disabled', false).text('Register');
                 msg.addClass('error').text(response.data.message).show();
+                wclResetTurnstile(form);
             }
         });
     });
@@ -227,7 +243,9 @@ jQuery(document).ready(function ($) {
         $.post(wclAccount.ajaxUrl, {
             action: 'wcl_lost_password',
             nonce: wclAccount.nonce,
-            user_login: form.find('input[name="user_login"]').val()
+            user_login: form.find('input[name="user_login"]').val(),
+            wcl_hp_website: form.find('input[name="wcl_hp_website"]').val() || '',
+            'cf-turnstile-response': form.find('[name="cf-turnstile-response"]').val() || ''
         }, function (response) {
             btn.prop('disabled', false).text('Get New Password');
             if (response.success) {
@@ -235,6 +253,7 @@ jQuery(document).ready(function ($) {
                 form[0].reset();
             } else {
                 msg.addClass('error').text(response.data.message).show();
+                wclResetTurnstile(form);
             }
         });
     });

@@ -94,6 +94,9 @@ if (!class_exists('WCL_Activator')) {
             'wcl_paywall_title' => __('Premium Content', 'wp-content-locker'),
             'wcl_paywall_description' => __('Subscribe to read the full article and get access to all premium content.', 'wp-content-locker'),
             'wcl_subscribe_button_text' => __('Subscribe Now', 'wp-content-locker'),
+            'wcl_turnstile_enabled' => 0,
+            'wcl_turnstile_site_key' => '',
+            'wcl_turnstile_secret_key' => '',
         );
 
         foreach ($defaults as $key => $value) {

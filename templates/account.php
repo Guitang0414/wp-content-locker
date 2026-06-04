@@ -38,6 +38,8 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                             <?php _e('Remember me', 'wp-content-locker'); ?>
                         </label>
                     </div>
+                    <?php WCL_Turnstile::render_honeypot(); ?>
+                    <?php WCL_Turnstile::render_widget('login'); ?>
                     <button type="submit" class="wcl-btn wcl-btn-primary wcl-login-btn">
                         <?php _e('Login', 'wp-content-locker'); ?>
                     </button>
@@ -71,6 +73,8 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                         <label for="wcl_reg_password"><?php _e('Password', 'wp-content-locker'); ?></label>
                         <input type="password" id="wcl_reg_password" name="password" required minlength="8" />
                     </div>
+                    <?php WCL_Turnstile::render_honeypot(); ?>
+                    <?php WCL_Turnstile::render_widget('register'); ?>
                     <button type="submit" class="wcl-btn wcl-btn-primary wcl-register-btn">
                         <?php _e('Register', 'wp-content-locker'); ?>
                     </button>
@@ -95,6 +99,8 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                         <label for="wcl_lost_email"><?php _e('Username or Email', 'wp-content-locker'); ?></label>
                         <input type="text" id="wcl_lost_email" name="user_login" required />
                     </div>
+                    <?php WCL_Turnstile::render_honeypot(); ?>
+                    <?php WCL_Turnstile::render_widget('lost_password'); ?>
                     <button type="submit" class="wcl-btn wcl-btn-primary wcl-lost-password-btn">
                         <?php _e('Get New Password', 'wp-content-locker'); ?>
                     </button>

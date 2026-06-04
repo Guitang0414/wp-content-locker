@@ -55,6 +55,9 @@ class WCL_Account {
             true
         );
 
+        // Cloudflare Turnstile widget script (no-op if disabled in settings)
+        WCL_Turnstile::enqueue_script();
+
         wp_localize_script('wcl-account', 'wclAccount', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wcl_account_nonce'),
@@ -87,6 +90,12 @@ class WCL_Account {
         // Verify nonce
         if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
             wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        // Bot protection: honeypot + IP rate-limit + Turnstile
+        $guard = WCL_Turnstile::guard('login');
+        if (is_wp_error($guard)) {
+            wp_send_json_error(array('message' => $guard->get_error_message()));
         }
 
         $username = isset($_POST['username']) ? sanitize_text_field($_POST['username']) : '';
@@ -122,6 +131,12 @@ class WCL_Account {
         // Verify nonce
         if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
             wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        // Bot protection: honeypot + IP rate-limit + Turnstile
+        $guard = WCL_Turnstile::guard('register');
+        if (is_wp_error($guard)) {
+            wp_send_json_error(array('message' => $guard->get_error_message()));
         }
 
         $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
@@ -168,6 +183,13 @@ class WCL_Account {
         // Verify nonce
         if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
             wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+
+        // Bot protection: honeypot + IP rate-limit + Turnstile
+        // Stricter rate limit on this one — keeps inboxes safe from outbound mail floods.
+        $guard = WCL_Turnstile::guard('lost_password');
+        if (is_wp_error($guard)) {
+            wp_send_json_error(array('message' => $guard->get_error_message()));
         }
 
         $user_login = isset($_POST['user_login']) ? sanitize_text_field($_POST['user_login']) : '';

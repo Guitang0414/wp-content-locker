@@ -345,3 +345,8 @@
         padding: 20px;
     }
 }
+/* Cloudflare Turnstile widget */
+.wcl-turnstile {
+    margin: 0 0 16px;
+    min-height: 65px;
+}
