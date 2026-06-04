@@ -727,7 +727,10 @@ class WCL_Admin {
      * Enqueue admin styles
      */
     public function enqueue_styles($hook) {
-        if ('settings_page_wp-content-locker' !== $hook) {
+        // Menu was migrated from a settings submenu to a top-level menu (add_menu_page),
+        // so the hook is now 'toplevel_page_wp-content-locker', not 'settings_page_...'.
+        // Match any page slug starting with our menu slug to also cover submenus.
+        if (strpos($hook, 'page_wp-content-locker') === false && strpos($hook, 'page_wcl-') === false) {
             return;
         }
         wp_enqueue_style('wcl-admin', WCL_PLUGIN_URL . 'admin/css/admin.css', array(), file_exists(WCL_PLUGIN_DIR . 'admin/css/admin.css') ? filemtime(WCL_PLUGIN_DIR . 'admin/css/admin.css') : WCL_VERSION);
@@ -737,7 +740,9 @@ class WCL_Admin {
      * Enqueue admin scripts
      */
     public function enqueue_scripts($hook) {
-        if ('settings_page_wp-content-locker' !== $hook) {
+        // Same hook-name fix as enqueue_styles above — top-level menu uses
+        // 'toplevel_page_*' instead of 'settings_page_*'.
+        if (strpos($hook, 'page_wp-content-locker') === false && strpos($hook, 'page_wcl-') === false) {
             return;
         }
         wp_enqueue_script('wcl-admin', WCL_PLUGIN_URL . 'admin/js/admin.js', array('jquery'), file_exists(WCL_PLUGIN_DIR . 'admin/js/admin.js') ? filemtime(WCL_PLUGIN_DIR . 'admin/js/admin.js') : WCL_VERSION, true);
