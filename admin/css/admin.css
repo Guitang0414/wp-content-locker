@@ -30,3 +30,12 @@
     color: #646970;
     font-size: 12px;
 }
+
+/* Tabbed settings: only the active tab pane is visible. */
+.wcl-settings-tab {
+    display: none;
+}
+
+.wcl-settings-tab.active {
+    display: block;
+}

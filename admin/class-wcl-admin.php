@@ -499,33 +499,41 @@ class WCL_Admin {
         $current = isset($_GET['tab']) && isset($tabs[$_GET['tab']]) ? sanitize_key($_GET['tab']) : 'stripe';
         $webhook_url = rest_url('wp-content-locker/v1/webhook');
         ?>
-        <div class="wrap">
+        <div class="wrap wcl-settings-wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
             <?php settings_errors('wcl_messages'); ?>
 
             <h2 class="nav-tab-wrapper wp-clearfix">
                 <?php foreach ($tabs as $slug => $tab) :
+                    // href falls back to a real URL for no-JS / shareable links,
+                    // but the click handler intercepts it and switches via JS (instant).
                     $url = add_query_arg(array('page' => 'wp-content-locker', 'tab' => $slug), admin_url('admin.php'));
-                    $class = 'nav-tab' . ($slug === $current ? ' nav-tab-active' : '');
+                    $class = 'nav-tab wcl-tab-link' . ($slug === $current ? ' nav-tab-active' : '');
                 ?>
-                    <a href="<?php echo esc_url($url); ?>" class="<?php echo esc_attr($class); ?>"><?php echo esc_html($tab['label']); ?></a>
+                    <a href="<?php echo esc_url($url); ?>" class="<?php echo esc_attr($class); ?>" data-tab="<?php echo esc_attr($slug); ?>"><?php echo esc_html($tab['label']); ?></a>
                 <?php endforeach; ?>
             </h2>
 
-            <?php if ($current === 'stripe') : ?>
-                <div class="wcl-admin-notice" style="margin-top:16px;">
-                    <p><strong><?php _e('Webhook URL:', 'wp-content-locker'); ?></strong></p>
-                    <code><?php echo esc_url($webhook_url); ?></code>
-                    <p class="description"><?php _e('Add this URL to your Stripe webhook settings. Required events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed', 'wp-content-locker'); ?></p>
-                </div>
-            <?php endif; ?>
-
             <form action="options.php" method="post">
-                <?php
-                settings_fields('wcl_settings');
-                $this->render_settings_sections($tabs[$current]['sections']);
-                submit_button(__('Save Settings', 'wp-content-locker'));
+                <?php settings_fields('wcl_settings'); ?>
+
+                <?php foreach ($tabs as $slug => $tab) :
+                    $pane_class = 'wcl-settings-tab' . ($slug === $current ? ' active' : '');
                 ?>
+                    <div class="<?php echo esc_attr($pane_class); ?>" data-tab="<?php echo esc_attr($slug); ?>">
+                        <?php if ($slug === 'stripe') : ?>
+                            <div class="wcl-admin-notice" style="margin-top:16px;">
+                                <p><strong><?php _e('Webhook URL:', 'wp-content-locker'); ?></strong></p>
+                                <code><?php echo esc_url($webhook_url); ?></code>
+                                <p class="description"><?php _e('Add this URL to your Stripe webhook settings. Required events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed', 'wp-content-locker'); ?></p>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php $this->render_settings_sections($tab['sections']); ?>
+                    </div>
+                <?php endforeach; ?>
+
+                <?php submit_button(__('Save Settings', 'wp-content-locker')); ?>
             </form>
         </div>
         <?php
