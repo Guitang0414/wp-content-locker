@@ -43,6 +43,36 @@ jQuery(document).ready(function ($) {
         }
     });
 
+    // GetResponse: force re-check membership
+    $(document).on('click', '.wcl-gr-refresh-btn', function () {
+        var btn = $(this);
+        var row = btn.closest('[data-gr-row]');
+        var originalText = btn.text();
+        btn.prop('disabled', true).text('Refreshing…');
+        $.post(wclAccount.ajaxUrl, {
+            action: 'wcl_refresh_gr',
+            nonce: wclAccount.nonce
+        }, function (response) {
+            btn.prop('disabled', false).text(originalText);
+            if (!response.success) return;
+            var statusEl = row.find('.wcl-ext-sub-status');
+            var actionEl = row.find('.wcl-ext-sub-action');
+            if (response.data.subscribed) {
+                statusEl.html('<span style="color:#22c55e;font-weight:600;">✅</span>');
+                actionEl.remove();
+            } else if (response.data.unknown) {
+                statusEl.html('<span style="color:#999;">…</span>');
+            } else {
+                statusEl.html('<span style="color:#ef4444;font-weight:600;">❌</span>');
+                if (response.data.subscribe_url && !actionEl.length) {
+                    row.find('.wcl-ext-sub-label').after(
+                        '<a href="' + response.data.subscribe_url + '" class="wcl-ext-sub-action" target="_blank" rel="noopener">Subscribe →</a>'
+                    );
+                }
+            }
+        });
+    });
+
     // Profile Update
     $('#wcl-profile-form').submit(function (e) {
         e.preventDefault();

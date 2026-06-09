@@ -86,6 +86,7 @@ if (!class_exists('WP_Content_Locker')) {
 			require_once WCL_PLUGIN_DIR . 'includes/class-wcl-content.php';
 			require_once WCL_PLUGIN_DIR . 'includes/class-wcl-turnstile.php';
 			require_once WCL_PLUGIN_DIR . 'includes/class-wcl-options-guard.php';
+			require_once WCL_PLUGIN_DIR . 'includes/class-wcl-getresponse.php';
 			WCL_Options_Guard::register();
 			require_once WCL_PLUGIN_DIR . 'admin/class-wcl-admin.php';
 			require_once WCL_PLUGIN_DIR . 'admin/class-wcl-metabox.php';

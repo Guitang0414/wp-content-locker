@@ -418,6 +418,74 @@ class WCL_Admin {
             array($this, 'render_system_status_section'),
             'wp-content-locker'
         );
+
+        // GetResponse Integration Section
+        add_settings_section(
+            'wcl_gr_section',
+            __('GetResponse Integration', 'wp-content-locker'),
+            array($this, 'render_gr_section'),
+            'wp-content-locker'
+        );
+
+        register_setting('wcl_settings', 'wcl_gr_api_key');
+        add_settings_field(
+            'wcl_gr_api_key',
+            __('GetResponse API Key', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_gr_section',
+            array(
+                'name' => 'wcl_gr_api_key',
+                'type' => 'password',
+                'class' => 'regular-text',
+                'description' => __('From GetResponse → Integrations & API → API. Keys expire after 90 days of non-use.', 'wp-content-locker'),
+            )
+        );
+
+        register_setting('wcl_settings', 'wcl_gr_campaign_id');
+        add_settings_field(
+            'wcl_gr_campaign_id',
+            __('Campaign ID to check', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_gr_section',
+            array(
+                'name' => 'wcl_gr_campaign_id',
+                'class' => 'regular-text',
+                'placeholder' => 'iIina',
+                'description' => __('The list/campaign whose membership we check for each logged-in user. Save API key first, then use Test connection below to see your campaigns.', 'wp-content-locker'),
+            )
+        );
+
+        register_setting('wcl_settings', 'wcl_gr_campaign_label');
+        add_settings_field(
+            'wcl_gr_campaign_label',
+            __('Display label', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_gr_section',
+            array(
+                'name' => 'wcl_gr_campaign_label',
+                'class' => 'regular-text',
+                'placeholder' => 'Arizona Insider Subscription',
+                'description' => __('Shown on the account page next to ✅ / ❌.', 'wp-content-locker'),
+            )
+        );
+
+        register_setting('wcl_settings', 'wcl_gr_subscribe_url');
+        add_settings_field(
+            'wcl_gr_subscribe_url',
+            __('Subscribe URL', 'wp-content-locker'),
+            array($this, 'render_text_field'),
+            'wp-content-locker',
+            'wcl_gr_section',
+            array(
+                'name' => 'wcl_gr_subscribe_url',
+                'class' => 'regular-text',
+                'placeholder' => 'https://arizonainsiders.com/subscribe/',
+                'description' => __('Where to send users who are NOT subscribed.', 'wp-content-locker'),
+            )
+        );
     }
 
     /**
@@ -450,7 +518,56 @@ class WCL_Admin {
                 'label' => __('System Status', 'wp-content-locker'),
                 'sections' => array('wcl_system_status_section'),
             ),
+            'integrations' => array(
+                'label' => __('Integrations', 'wp-content-locker'),
+                'sections' => array('wcl_gr_section'),
+            ),
         );
+    }
+
+    /**
+     * Render GetResponse section description + Test connection button + live campaign list.
+     */
+    public function render_gr_section() {
+        echo '<p>' . esc_html__('Surface external newsletter / list subscription status on the user account page.', 'wp-content-locker') . '</p>';
+
+        $key = WCL_GetResponse::get_api_key();
+        if ($key === '') {
+            echo '<p class="description">' . esc_html__('Enter and save your API key below to enable the Test connection button.', 'wp-content-locker') . '</p>';
+            return;
+        }
+
+        // Test connection
+        $account = WCL_GetResponse::ping_account();
+        if (is_wp_error($account)) {
+            echo '<div class="notice notice-error inline" style="margin:10px 0;padding:8px 12px;"><strong>' .
+                esc_html__('Test connection failed:', 'wp-content-locker') . '</strong> ' .
+                esc_html($account->get_error_message()) . '</div>';
+            return;
+        }
+        $account_name = isset($account['firstName']) ? $account['firstName'] . ' ' . ($account['lastName'] ?? '') : '';
+        echo '<div class="notice notice-success inline" style="margin:10px 0;padding:8px 12px;"><strong>' .
+            esc_html__('Connected:', 'wp-content-locker') . '</strong> ' . esc_html(trim($account_name)) .
+            ' &lt;' . esc_html($account['email'] ?? '') . '&gt;</div>';
+
+        // Live campaign list
+        $campaigns = WCL_GetResponse::list_campaigns();
+        if (!empty($campaigns)) {
+            $current_cid = WCL_GetResponse::get_campaign_id();
+            echo '<details style="margin:10px 0;"><summary style="cursor:pointer;font-weight:600;">' .
+                sprintf(esc_html__('Available campaigns (%d) — click to expand', 'wp-content-locker'), count($campaigns)) .
+                '</summary><table class="widefat striped" style="margin-top:8px;max-width:700px;"><thead><tr><th>' .
+                esc_html__('campaignId', 'wp-content-locker') . '</th><th>' .
+                esc_html__('Name', 'wp-content-locker') . '</th></tr></thead><tbody>';
+            foreach ($campaigns as $c) {
+                $is_current = ($c['campaignId'] === $current_cid);
+                $row_style = $is_current ? 'background:#fff3cd;font-weight:600;' : '';
+                echo '<tr style="' . esc_attr($row_style) . '"><td><code>' . esc_html($c['campaignId']) . '</code>' .
+                    ($is_current ? ' ← ' . esc_html__('currently configured', 'wp-content-locker') : '') .
+                    '</td><td>' . esc_html($c['name']) . '</td></tr>';
+            }
+            echo '</tbody></table></details>';
+        }
     }
 
     /**

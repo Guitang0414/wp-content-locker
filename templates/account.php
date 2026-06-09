@@ -222,6 +222,40 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                     <?php else : ?>
                         <p><?php _e('You do not have an active subscription.', 'wp-content-locker'); ?></p>
                     <?php endif; ?>
+
+                    <?php
+                    // GetResponse: surface external list membership for the logged-in user.
+                    if (WCL_GetResponse::is_enabled() && $current_user) :
+                        $gr_status = WCL_GetResponse::is_email_in_campaign($current_user->user_email);
+                        $gr_label = WCL_GetResponse::get_campaign_label();
+                        $gr_sub_url = WCL_GetResponse::get_subscribe_url();
+                    ?>
+                    <div class="wcl-external-subs" style="margin-top:30px;">
+                        <h3 class="wcl-section-subtitle"><?php _e('My Subscriptions', 'wp-content-locker'); ?></h3>
+                        <div class="wcl-ext-sub-row" data-gr-row>
+                            <span class="wcl-ext-sub-status">
+                                <?php if ($gr_status === true) : ?>
+                                    <span style="color:#22c55e;font-weight:600;">✅</span>
+                                <?php elseif ($gr_status === false) : ?>
+                                    <span style="color:#ef4444;font-weight:600;">❌</span>
+                                <?php else : ?>
+                                    <span style="color:#999;">…</span>
+                                <?php endif; ?>
+                            </span>
+                            <span class="wcl-ext-sub-label"><?php echo esc_html($gr_label); ?></span>
+                            <?php if ($gr_status === false && $gr_sub_url) : ?>
+                                <a href="<?php echo esc_url($gr_sub_url); ?>" class="wcl-ext-sub-action" target="_blank" rel="noopener">
+                                    <?php _e('Subscribe →', 'wp-content-locker'); ?>
+                                </a>
+                            <?php elseif ($gr_status === null) : ?>
+                                <span class="wcl-ext-sub-action" style="color:#999;font-size:13px;"><?php _e('checking…', 'wp-content-locker'); ?></span>
+                            <?php endif; ?>
+                            <button type="button" class="wcl-gr-refresh-btn" style="margin-left:12px;background:none;border:0;color:#0073aa;cursor:pointer;font-size:13px;">
+                                <?php _e('Refresh', 'wp-content-locker'); ?>
+                            </button>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Billing History Tab -->

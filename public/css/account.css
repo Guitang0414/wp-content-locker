@@ -350,3 +350,31 @@
     margin: 0 0 16px;
     min-height: 65px;
 }
+
+/* External subscription rows (GetResponse list status) */
+.wcl-external-subs {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.wcl-section-subtitle {
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.wcl-ext-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.wcl-ext-sub-action {
+    margin-left: auto;
+    color: #0080c3;
+    text-decoration: none;
+    font-weight: 500;
+}

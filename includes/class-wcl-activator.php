@@ -97,6 +97,10 @@ if (!class_exists('WCL_Activator')) {
             'wcl_turnstile_enabled' => 0,
             'wcl_turnstile_site_key' => '',
             'wcl_turnstile_secret_key' => '',
+            'wcl_gr_api_key' => '',
+            'wcl_gr_campaign_id' => '',
+            'wcl_gr_campaign_label' => '',
+            'wcl_gr_subscribe_url' => '',
         );
 
         foreach ($defaults as $key => $value) {

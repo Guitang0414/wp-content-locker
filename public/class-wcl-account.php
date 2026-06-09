@@ -28,6 +28,28 @@ class WCL_Account {
         add_action('wp_ajax_nopriv_wcl_register', array($this, 'ajax_register'));
         add_action('wp_ajax_wcl_lost_password', array($this, 'ajax_lost_password'));
         add_action('wp_ajax_nopriv_wcl_lost_password', array($this, 'ajax_lost_password'));
+        add_action('wp_ajax_wcl_refresh_gr', array($this, 'ajax_refresh_gr'));
+    }
+
+    /**
+     * Force re-check of the current user's GetResponse list membership.
+     */
+    public function ajax_refresh_gr() {
+        if (!check_ajax_referer('wcl_account_nonce', 'nonce', false)) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'wp-content-locker')));
+        }
+        if (!is_user_logged_in()) {
+            wp_send_json_error(array('message' => __('Not logged in.', 'wp-content-locker')));
+        }
+        $user = wp_get_current_user();
+        WCL_GetResponse::bust_cache($user->user_email);
+        $status = WCL_GetResponse::is_email_in_campaign($user->user_email);
+        wp_send_json_success(array(
+            'subscribed'    => $status === true,
+            'unknown'       => $status === null,
+            'label'         => WCL_GetResponse::get_campaign_label(),
+            'subscribe_url' => WCL_GetResponse::get_subscribe_url(),
+        ));
     }
 
     /**
