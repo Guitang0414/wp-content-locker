@@ -97,10 +97,42 @@ class WCL_Account {
     }
 
     /**
-     * Render account page shortcode
+     * Render account page shortcode.
+     *
+     * Outputs a scoped <style> block that breaks out of tagDiv Newspaper's
+     * narrow article container so the account dashboard gets full width.
+     * Scope is body.page-id-{N} so only the page hosting this shortcode is affected.
      */
     public function render_account_page($atts) {
         ob_start();
+        $pid = absint(get_the_ID());
+        if ($pid) {
+            $scope = 'body.page-id-' . $pid;
+            ?>
+            <style id="wcl-tagdiv-breakout">
+            <?php echo $scope; ?> .td-container,
+            <?php echo $scope; ?> .td-pb-row {
+                max-width: none !important;
+                width: 100% !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            <?php echo $scope; ?> .td-pb-span8.td-main-content {
+                width: 100% !important;
+                max-width: none !important;
+                float: none !important;
+            }
+            <?php echo $scope; ?> .td-pb-span4 {
+                display: none !important;
+            }
+            <?php echo $scope; ?> .td-page-header,
+            <?php echo $scope; ?> .entry-crumbs,
+            <?php echo $scope; ?> .td-crumb-container {
+                display: none !important;
+            }
+            </style>
+            <?php
+        }
         include WCL_PLUGIN_DIR . 'templates/account.php';
         return ob_get_clean();
     }

@@ -378,3 +378,266 @@
     text-decoration: none;
     font-weight: 500;
 }
+
+/* ============================================================
+ *  STAGE 1 — EET-inspired refresh (2026-06-09)
+ *  Higher-specificity overrides that win over earlier rules.
+ *  Color tokens centralized so they're easy to swap later.
+ * ============================================================ */
+
+.wcl-account-wrapper {
+    --wcl-ink: #1a1a1a;
+    --wcl-ink-soft: #555;
+    --wcl-line: #e6e6e6;
+    --wcl-bg-soft: #f6f7f9;
+    --wcl-bg-stripe: #fbfbfc;
+    --wcl-accent: #0073aa;
+    --wcl-accent-soft: #e7f1f7;
+    --wcl-accent-hover: #005a85;
+    --wcl-serif: "Source Serif Pro", Georgia, "Times New Roman", serif;
+
+    max-width: 1200px;
+    margin: 50px auto;
+    color: var(--wcl-ink);
+}
+
+.wcl-account-wrapper .wcl-dashboard-container {
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+    border: 1px solid var(--wcl-line);
+}
+
+/* Sidebar */
+.wcl-account-wrapper .wcl-sidebar {
+    width: 280px;
+    background: var(--wcl-bg-soft);
+    border-right: 1px solid var(--wcl-line);
+    padding: 32px 0;
+}
+
+.wcl-account-wrapper .wcl-user-brief {
+    padding: 0 28px 22px;
+    border-bottom: 1px solid var(--wcl-line);
+    margin-bottom: 0;
+}
+
+.wcl-account-wrapper .wcl-user-name {
+    font-family: var(--wcl-serif);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    margin: 0 0 6px;
+}
+
+.wcl-account-wrapper .wcl-user-email {
+    font-size: 13px;
+    color: var(--wcl-ink-soft);
+}
+
+.wcl-account-wrapper .wcl-logout-btn {
+    margin: 16px 28px 24px;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid var(--wcl-line);
+    border-radius: 4px;
+    color: var(--wcl-ink);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.wcl-account-wrapper .wcl-logout-btn:hover {
+    background: var(--wcl-bg-soft);
+    color: var(--wcl-ink);
+}
+
+.wcl-account-wrapper .wcl-nav-item {
+    padding: 14px 28px;
+    font-size: 14.5px;
+    color: var(--wcl-ink);
+    border-left: 3px solid transparent;
+    transition: background .15s;
+}
+
+.wcl-account-wrapper .wcl-nav-item:hover {
+    background: rgba(0, 115, 170, 0.06);
+    color: var(--wcl-ink);
+}
+
+.wcl-account-wrapper .wcl-nav-item.active {
+    background: var(--wcl-accent-soft);
+    border-left-color: var(--wcl-accent);
+    color: var(--wcl-ink);
+    font-weight: 500;
+    box-shadow: none;
+}
+
+/* Main content */
+.wcl-account-wrapper .wcl-main-content {
+    padding: 40px 56px;
+}
+
+.wcl-account-wrapper .wcl-section-title {
+    font-family: var(--wcl-serif);
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin: 0 0 32px;
+    padding-bottom: 0;
+    border-bottom: 0;
+    color: var(--wcl-ink);
+}
+
+/* Subscription details — now a row-based table */
+.wcl-account-wrapper .wcl-sub-table {
+    background: #fff;
+    border: 1px solid var(--wcl-line);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.wcl-account-wrapper .wcl-sub-row {
+    display: grid;
+    grid-template-columns: 240px 1fr auto;
+    align-items: center;
+    padding: 18px 28px;
+    font-size: 15px;
+    border-bottom: 1px solid var(--wcl-line);
+    color: var(--wcl-ink);
+}
+
+.wcl-account-wrapper .wcl-sub-row:last-child { border-bottom: 0; }
+.wcl-account-wrapper .wcl-sub-row:nth-child(even) { background: var(--wcl-bg-stripe); }
+
+.wcl-account-wrapper .wcl-sub-label {
+    font-weight: 600;
+    color: var(--wcl-ink);
+}
+
+.wcl-account-wrapper .wcl-sub-action {
+    color: var(--wcl-accent);
+    text-decoration: none;
+    font-size: 13.5px;
+}
+
+.wcl-account-wrapper .wcl-sub-action:hover { color: var(--wcl-accent-hover); }
+
+.wcl-account-wrapper .wcl-status-pill {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+}
+.wcl-account-wrapper .wcl-status-pill.active { background: #e8f6e8; color: #1b7c2a; }
+.wcl-account-wrapper .wcl-status-pill.canceling { background: #fef3c7; color: #92400e; }
+.wcl-account-wrapper .wcl-status-pill.canceled,
+.wcl-account-wrapper .wcl-status-pill.past_due { background: #fee2e2; color: #991b1b; }
+
+/* Action panels (Cancel / Resume) */
+.wcl-account-wrapper .wcl-action-panel {
+    margin-top: 30px;
+    padding: 28px 32px;
+    background: var(--wcl-bg-soft);
+    border-radius: 8px;
+}
+
+.wcl-account-wrapper .wcl-action-panel h3 {
+    font-family: var(--wcl-serif);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    color: var(--wcl-ink);
+}
+
+.wcl-account-wrapper .wcl-action-panel p {
+    margin: 0 0 18px;
+    color: var(--wcl-ink-soft);
+    font-size: 14.5px;
+    line-height: 1.6;
+    max-width: 640px;
+}
+
+.wcl-account-wrapper .wcl-action-panel .wcl-btn {
+    background: var(--wcl-accent);
+    color: #fff;
+    border: 0;
+    padding: 11px 24px;
+    font-weight: 500;
+}
+.wcl-account-wrapper .wcl-action-panel .wcl-btn:hover { background: var(--wcl-accent-hover); }
+
+/* External subscriptions (GetResponse list status) — restyle as bordered card */
+.wcl-account-wrapper .wcl-external-subs {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--wcl-line);
+}
+
+.wcl-account-wrapper .wcl-section-subtitle {
+    font-family: var(--wcl-serif);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 16px;
+}
+
+.wcl-account-wrapper .wcl-ext-sub-row {
+    border: 1px solid var(--wcl-line);
+    background: #fff;
+    border-radius: 6px;
+    padding: 16px 22px;
+    gap: 14px;
+    font-size: 15px;
+}
+
+.wcl-account-wrapper .wcl-ext-sub-action {
+    color: var(--wcl-accent);
+    font-weight: 500;
+    font-size: 14.5px;
+}
+.wcl-account-wrapper .wcl-ext-sub-action:hover { color: var(--wcl-accent-hover); }
+
+.wcl-account-wrapper .wcl-gr-refresh-btn {
+    color: var(--wcl-ink-soft) !important;
+    font-size: 13px !important;
+}
+
+/* Forms */
+.wcl-account-wrapper .wcl-dashboard-form { max-width: 560px; }
+.wcl-account-wrapper .wcl-dashboard-form input[type="text"],
+.wcl-account-wrapper .wcl-dashboard-form input[type="email"],
+.wcl-account-wrapper .wcl-dashboard-form input[type="password"] {
+    padding: 11px 14px;
+    border-color: var(--wcl-line);
+    border-radius: 4px;
+    font-size: 15px;
+}
+.wcl-account-wrapper .wcl-btn-save {
+    background: var(--wcl-accent);
+    color: #fff;
+    padding: 11px 24px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+.wcl-account-wrapper .wcl-btn-save:hover { background: var(--wcl-accent-hover); }
+
+/* Billing table */
+.wcl-account-wrapper .wcl-billing-table th { background: var(--wcl-bg-soft); border-bottom-color: var(--wcl-line); }
+.wcl-account-wrapper .wcl-billing-table td { border-bottom-color: var(--wcl-line); }
+.wcl-account-wrapper .wcl-pdf-link { color: var(--wcl-accent); }
+.wcl-account-wrapper .wcl-pdf-link:hover { color: var(--wcl-accent-hover); }
+
+/* Hide old box around subscription details since we replaced with table */
+.wcl-account-wrapper .wcl-subscription-card { all: unset; display: block; }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .wcl-account-wrapper .wcl-main-content { padding: 24px; }
+    .wcl-account-wrapper .wcl-section-title { font-size: 26px; margin-bottom: 22px; }
+    .wcl-account-wrapper .wcl-sub-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 14px 18px;
+    }
+}

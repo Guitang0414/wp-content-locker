@@ -186,39 +186,54 @@ $subscription_data = $is_logged_in ? WCL_Account::get_subscription_display_data(
                 <!-- Subscription Tab -->
                 <div id="wcl-tab-subscription" class="wcl-tab-content">
                     <h2 class="wcl-section-title"><?php _e('My Subscription', 'wp-content-locker'); ?></h2>
-                    
-                    <?php if ($subscription_data) : ?>
-                        <div class="wcl-subscription-card">
-                            <div class="wcl-sub-header">
-                                <span class="wcl-plan-name"><?php echo esc_html($subscription_data['plan_label']); ?></span>
-                                <span class="wcl-status-badge" style="background-color: <?php echo esc_attr($subscription_data['status_color']); ?>">
-                                    <?php echo esc_html($subscription_data['status_label']); ?>
-                                </span>
-                            </div>
-                            
-                            <div class="wcl-sub-details">
-                                <p>
-                                    <strong><?php _e('Next Billing Date', 'wp-content-locker'); ?></strong>
-                                    <span><?php echo esc_html($subscription_data['current_period_end_formatted']); ?></span>
-                                </p>
-                                <p>
-                                    <strong><?php _e('Payment Method', 'wp-content-locker'); ?></strong>
-                                    <span><?php echo esc_html($subscription_data['payment_method']); ?></span>
-                                </p>
-                            </div>
 
-                            <?php if ($subscription_data['can_cancel']) : ?>
-                                <button type="button" class="wcl-btn wcl-cancel-btn wcl-cancel-subscription-btn">
+                    <?php if ($subscription_data) : ?>
+                        <div class="wcl-sub-table">
+                            <div class="wcl-sub-row">
+                                <span class="wcl-sub-label"><?php _e('Plan', 'wp-content-locker'); ?></span>
+                                <span><?php echo esc_html($subscription_data['plan_label']); ?></span>
+                                <span></span>
+                            </div>
+                            <div class="wcl-sub-row">
+                                <span class="wcl-sub-label"><?php _e('Status', 'wp-content-locker'); ?></span>
+                                <span>
+                                    <span class="wcl-status-pill <?php echo esc_attr($subscription_data['status']); ?>">
+                                        <?php echo esc_html($subscription_data['status_label']); ?>
+                                    </span>
+                                </span>
+                                <span></span>
+                            </div>
+                            <div class="wcl-sub-row">
+                                <span class="wcl-sub-label"><?php _e('Next Billing Date', 'wp-content-locker'); ?></span>
+                                <span><?php echo esc_html($subscription_data['current_period_end_formatted']); ?></span>
+                                <span></span>
+                            </div>
+                            <div class="wcl-sub-row">
+                                <span class="wcl-sub-label"><?php _e('Payment Method', 'wp-content-locker'); ?></span>
+                                <span><?php echo esc_html($subscription_data['payment_method']); ?></span>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <?php if ($subscription_data['can_cancel']) : ?>
+                            <div class="wcl-action-panel">
+                                <h3><?php _e('Cancel my subscription', 'wp-content-locker'); ?></h3>
+                                <p><?php printf(__("You'll keep access until %s. After that, your subscription ends and you can re-subscribe anytime.", 'wp-content-locker'), esc_html($subscription_data['current_period_end_formatted'])); ?></p>
+                                <button type="button" class="wcl-btn wcl-cancel-subscription-btn">
                                     <?php _e('Cancel Subscription', 'wp-content-locker'); ?>
                                 </button>
-                            <?php endif; ?>
-                            
-                            <?php if ($subscription_data['can_resume']) : ?>
-                                <button type="button" class="wcl-btn wcl-resume-btn wcl-resume-subscription-btn">
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($subscription_data['can_resume']) : ?>
+                            <div class="wcl-action-panel">
+                                <h3><?php _e('Resume my subscription', 'wp-content-locker'); ?></h3>
+                                <p><?php _e('Your subscription is scheduled to end. Resume now to keep uninterrupted access.', 'wp-content-locker'); ?></p>
+                                <button type="button" class="wcl-btn wcl-resume-subscription-btn">
                                     <?php _e('Resume Subscription', 'wp-content-locker'); ?>
                                 </button>
-                            <?php endif; ?>
-                        </div>
+                            </div>
+                        <?php endif; ?>
                     <?php else : ?>
                         <p><?php _e('You do not have an active subscription.', 'wp-content-locker'); ?></p>
                     <?php endif; ?>
