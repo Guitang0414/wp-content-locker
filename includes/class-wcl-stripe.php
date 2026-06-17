@@ -320,6 +320,40 @@ class WCL_Stripe {
     }
 
     /**
+     * Extract the current period start/end from a Stripe subscription object.
+     *
+     * As of Stripe API 2025-03-31 (basil), current_period_start/end were removed
+     * from the top-level subscription object and moved to the subscription ITEM
+     * (items.data[0].current_period_*). We read the item level first and fall
+     * back to the deprecated top-level field for older API versions.
+     *
+     * @return array{start: ?string, end: ?string} formatted 'Y-m-d H:i:s' (UTC) or null
+     */
+    public static function extract_period($subscription) {
+        $item = isset($subscription['items']['data'][0]) ? $subscription['items']['data'][0] : null;
+
+        $start_ts = null;
+        $end_ts = null;
+
+        if ($item && isset($item['current_period_start'])) {
+            $start_ts = $item['current_period_start'];
+        } elseif (isset($subscription['current_period_start'])) {
+            $start_ts = $subscription['current_period_start'];
+        }
+
+        if ($item && isset($item['current_period_end'])) {
+            $end_ts = $item['current_period_end'];
+        } elseif (isset($subscription['current_period_end'])) {
+            $end_ts = $subscription['current_period_end'];
+        }
+
+        return array(
+            'start' => $start_ts ? gmdate('Y-m-d H:i:s', $start_ts) : null,
+            'end'   => $end_ts ? gmdate('Y-m-d H:i:s', $end_ts) : null,
+        );
+    }
+
+    /**
      * Cancel subscription
      */
     public function cancel_subscription($subscription_id, $at_period_end = true) {
@@ -582,12 +616,11 @@ class WCL_Stripe {
                 $plan_name = ($interval === 'year') ? __('Yearly Subscription', 'wp-content-locker') : __('Monthly Subscription', 'wp-content-locker');
             }
 
-            $period_start = isset($subscription['current_period_start'])
-                ? date('Y-m-d H:i:s', $subscription['current_period_start'])
-                : null;
-            $period_end = isset($subscription['current_period_end'])
-                ? date('Y-m-d H:i:s', $subscription['current_period_end'])
-                : null;
+            // Stripe moved current_period_* to the subscription item (basil API);
+            // extract_period() reads item-level with top-level fallback.
+            $period = self::extract_period($subscription);
+            $period_start = $period['start'];
+            $period_end = $period['end'];
         }
 
         // Fetch Invoice PDF if available
@@ -650,12 +683,19 @@ class WCL_Stripe {
             $wcl_status = 'canceling';
         }
 
-        // Update subscription in database
-        WCL_Subscription::update_subscription_by_stripe_id($subscription_id, array(
-            'status' => $wcl_status,
-            'current_period_start' => date('Y-m-d H:i:s', $subscription['current_period_start']),
-            'current_period_end' => date('Y-m-d H:i:s', $subscription['current_period_end']),
-        ));
+        // Update subscription in database.
+        // Read current_period_* from the item level (basil API) with top-level
+        // fallback. Only write period fields when present, so a missing value
+        // never overwrites a good date with 1970-01-01.
+        $period = self::extract_period($subscription);
+        $update = array('status' => $wcl_status);
+        if ($period['start'] !== null) {
+            $update['current_period_start'] = $period['start'];
+        }
+        if ($period['end'] !== null) {
+            $update['current_period_end'] = $period['end'];
+        }
+        WCL_Subscription::update_subscription_by_stripe_id($subscription_id, $update);
 
         // Update user meta
         $sub = WCL_Subscription::get_by_stripe_subscription_id($subscription_id);

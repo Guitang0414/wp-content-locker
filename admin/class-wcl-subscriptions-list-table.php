@@ -107,7 +107,10 @@ class WCL_Subscriptions_List_Table extends WP_List_Table {
      * Render Status column
      */
     protected function column_status($item) {
-        $status = $item['status'];
+        // Show the EFFECTIVE status (reconciled with current_period_end) so the
+        // admin display matches whether the user can actually access content,
+        // instead of the raw stored status which can read "active" past Ends.
+        $status = WCL_Subscription::get_effective_status($item);
         $label = WCL_Subscription::get_status_label($status);
         $color = 'gray';
 
@@ -115,7 +118,12 @@ class WCL_Subscriptions_List_Table extends WP_List_Table {
             case 'active':
                 $color = 'green';
                 break;
+            case 'canceling':
+                $color = 'orange';
+                break;
             case 'canceled':
+            case 'expired':
+            case 'inactive':
                 $color = 'red';
                 break;
             case 'past_due':
@@ -123,9 +131,16 @@ class WCL_Subscriptions_List_Table extends WP_List_Table {
                 break;
         }
 
+        // If the stored status and effective status differ, hint at the raw value.
+        $raw = isset($item['status']) ? $item['status'] : '';
+        $title = ($raw && $raw !== $status)
+            ? sprintf(' title="%s"', esc_attr(sprintf(__('Stored status: %s', 'wp-content-locker'), $raw)))
+            : '';
+
         return sprintf(
-            '<span style="color:%s;font-weight:bold;">%s</span>',
+            '<span style="color:%s;font-weight:bold;"%s>%s</span>',
             esc_attr($color),
+            $title,
             esc_html($label)
         );
     }

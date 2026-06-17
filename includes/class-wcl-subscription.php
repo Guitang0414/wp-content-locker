@@ -321,9 +321,51 @@ class WCL_Subscription {
             'canceling' => __('Canceling at period end', 'wp-content-locker'),
             'canceled' => __('Canceled', 'wp-content-locker'),
             'past_due' => __('Past due', 'wp-content-locker'),
+            'expired' => __('Expired', 'wp-content-locker'),
+            'inactive' => __('Inactive', 'wp-content-locker'),
         );
 
         return isset($labels[$status]) ? $labels[$status] : $status;
+    }
+
+    /**
+     * Compute the EFFECTIVE status from the stored status + period end.
+     *
+     * The stored `status` column alone is misleading: a row can read 'active'
+     * while its current_period_end has already lapsed (e.g. a missed renewal
+     * webhook), so the admin shows green "Active" while the user is actually
+     * locked out of content. This reconciles display with real access:
+     *   - has access  -> 'active' (or 'canceling' if set to end at period end)
+     *   - lapsed      -> 'expired'
+     *   - otherwise   -> the underlying reason ('canceled' / 'past_due').
+     *
+     * Mirrors the access predicate in get_active_subscription().
+     *
+     * @param array|object $sub A subscription row.
+     * @return string One of active|canceling|expired|canceled|past_due|inactive
+     */
+    public static function get_effective_status($sub) {
+        $sub = (array) $sub;
+        $status = isset($sub['status']) ? $sub['status'] : '';
+        $end = isset($sub['current_period_end']) ? $sub['current_period_end'] : null;
+        $now = gmdate('Y-m-d H:i:s');
+
+        $has_future_end = (!empty($end) && $end > $now);
+        // NULL end = ongoing/unknown, treated as still within period (matches access query).
+        $end_ok = empty($end) || $has_future_end;
+
+        if (in_array($status, array('active', 'canceling'), true) && $end_ok) {
+            return $status;
+        }
+        // Canceled in Stripe but still inside the paid period -> still has access.
+        if ($status === 'canceled' && $has_future_end) {
+            return 'canceling';
+        }
+        // Was active/canceling but the period lapsed with no renewal.
+        if (in_array($status, array('active', 'canceling'), true) && !$end_ok) {
+            return 'expired';
+        }
+        return $status !== '' ? $status : 'inactive';
     }
 
     /**
