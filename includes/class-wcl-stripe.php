@@ -391,10 +391,7 @@ class WCL_Stripe {
     public function handle_webhook($request) {
         $payload = $request->get_body();
         $sig_header = $request->get_header('stripe-signature');
-        
-        // DEBUG: Log incoming webhook
-        error_log('WCL Webhook Received: ' . substr($payload, 0, 100) . '...');
-        error_log('WCL Signature: ' . $sig_header);
+
         $webhook_secret = get_option('wcl_stripe_webhook_secret', '');
         $test_webhook_secret = get_option('wcl_stripe_test_webhook_secret', '');
 
@@ -423,10 +420,7 @@ class WCL_Stripe {
         if (isset($event['livemode'])) {
             $webhook_mode = $event['livemode'] ? 'live' : 'test';
             self::set_mode($webhook_mode);
-            error_log('WCL Webhook Mode Switched to: ' . $webhook_mode);
         }
-
-        error_log('WCL Webhook Verified. Event Type: ' . (isset($event['type']) ? $event['type'] : 'unknown'));
 
         if (!$event || !isset($event['type'])) {
             return new WP_REST_Response(array('error' => 'Invalid payload'), 400);
