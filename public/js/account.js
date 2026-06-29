@@ -9,6 +9,13 @@ jQuery(document).ready(function ($) {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
+    // Auto-show lost-password form when redirected from WP native lostpassword page
+    var wclAction = getUrlParameter('wcl_action');
+    if (wclAction === 'lost-password' && $('#wcl-lost-password-wrapper').length) {
+        $('#wcl-login-wrapper, #wcl-register-wrapper').hide();
+        $('#wcl-lost-password-wrapper').show();
+    }
+
     // Check for tab parameter
     var initialTab = getUrlParameter('tab');
     if (initialTab && $('#wcl-tab-' + initialTab).length) {

@@ -29,6 +29,9 @@ class WCL_Account {
         add_action('wp_ajax_wcl_lost_password', array($this, 'ajax_lost_password'));
         add_action('wp_ajax_nopriv_wcl_lost_password', array($this, 'ajax_lost_password'));
         add_action('wp_ajax_wcl_refresh_gr', array($this, 'ajax_refresh_gr'));
+
+        // Redirect WP native lostpassword page to our custom account page form.
+        add_action('login_form_lostpassword', array($this, 'redirect_native_lostpassword'));
     }
 
     /**
@@ -50,6 +53,22 @@ class WCL_Account {
             'label'         => WCL_GetResponse::get_campaign_label(),
             'subscribe_url' => WCL_GetResponse::get_subscribe_url(),
         ));
+    }
+
+    /**
+     * Redirect WP native lostpassword page to our account page's lost-password form.
+     * Prevents the infinite loop caused by 3rd-party email template plugins replacing
+     * the reset URL with action=lostpassword.
+     */
+    public function redirect_native_lostpassword() {
+        global $wpdb;
+        $account_page_id = $wpdb->get_var(
+            "SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE '%[wcl_account]%' AND post_status = 'publish' AND post_type = 'page' LIMIT 1"
+        );
+        if ($account_page_id) {
+            wp_redirect(add_query_arg('wcl_action', 'lost-password', get_permalink($account_page_id)));
+            exit;
+        }
     }
 
     /**
